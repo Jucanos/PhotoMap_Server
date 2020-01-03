@@ -1,0 +1,19 @@
+{
+  "name": "photomap_server",
+  "version": "1.0.0",
+  "description": "2019년 여름방학 프로젝트",
+  "main": "handler.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/RunaticMoon/PhotoMap_Server.git"
+  },
+  "author": "",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/RunaticMoon/PhotoMap_Server/issues"
+  },
+  "homepage": "https://github.com/RunaticMoon/PhotoMap_Server#readme"
+}
