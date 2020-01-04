@@ -16,6 +16,12 @@ service: photomap-server
 #app: your-app-name
 #org: your-org-name
 
+custom:
+  webpack:
+    webpackConfig: "webpack.config.js" # Name of webpack configuration file
+    packager: "npm" # Packager that will be used to package your external modules
+    excludeFiles: src/**/*.test.js # Provide a glob for files to ignore
+
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
 # frameworkVersion: "=X.X.X"
@@ -132,6 +138,8 @@ functions:
 #            host: example.com
 #            path: /hello
 
+plugins:
+  - serverless-webpack
 #    Define function environment variables here
 #    environment:
 #      variable2: value2
