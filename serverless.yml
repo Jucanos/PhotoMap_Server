@@ -129,6 +129,18 @@ functions:
       - http:
           path: /hello
           method: get
+  # 인증 관련 함수
+  authorize:
+    handler: src/auth.verify
+    tracing: true
+  refresh:
+    handler: src/auth.refresh
+    tracing: true
+    events:
+      - http:
+          path: /refresh
+          method: get
+          authorizer: authorize
   # 유저 관련 함수
   User:
     handler: src/users.handler
@@ -140,6 +152,7 @@ functions:
       - http:
           path: /users
           method: delete
+          authorizer: authorize
   # 지도 관련 함수
   Map:
     handler: src/maps.handler
@@ -148,9 +161,11 @@ functions:
       - http:
           path: /maps
           method: ANY
+          authorizer: authorize
       - http:
           path: /maps/{any+}
           method: ANY
+          authorizer: authorize
   # 스토리 관련 함수
   Story:
     handler: src/stories.handler
@@ -159,9 +174,11 @@ functions:
       - http:
           path: /stories
           method: ANY
+          authorizer: authorize
       - http:
           path: /stories/{any+}
           method: ANY
+          authorizer: authorize
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
