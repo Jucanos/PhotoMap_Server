@@ -1,5 +1,12 @@
 'use strict';
 
+// dotenv fetch
+require('dotenv').config();
+
+// AWS xray 연결
+const awsXRay = require('aws-xray-sdk');
+const awsSdk = awsXRay.captureAWS(require('aws-sdk'));
+
 module.exports.hello = async event => {
   return {
     statusCode: 200,

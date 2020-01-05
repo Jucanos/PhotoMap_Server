@@ -40,6 +40,16 @@ provider:
   runtime: nodejs10.x
   stage: ${env:STAGE}
   region: ap-northeast-2
+  tracing:
+    apiGateway: true
+    lambda: true
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - 'xray:PutTraceSegments'
+        - 'xray:PutelementryRecords'
+      Resource:
+        - '*'
 
 # you can overwrite defaults here
 #  stage: dev
@@ -77,38 +87,45 @@ package:
 #    - exclude-me-dir/**
 
 functions:
+  # 기본 테스트용 함수
   hello:
-    handler: handler.hello
+    handler: index.handler
+    tracing: true
     events:
       - http:
           path: hello
           method: get
   createStory:
     handler: src/stories.createStory
+    tracing: true
     events:
       - http:
           path: stories
           method: post
   readStories:
     handler: src/stories.readStories
+    tracing: true
     events:
       - http:
           path: stories
           method: get
   readStory:
     handler: src/stories.readStory
+    tracing: true
     events:
       - http:
           path: stories/{id}
           method: get
   updateStory:
     handler: src/stories.updateStory
+    tracing: true
     events:
       - http:
           path: stories/{id}
           method: patch
   deleteStory:
     handler: src/stories.deleteStory
+    tracing: true
     events:
       - http:
           path: stories/{id}
