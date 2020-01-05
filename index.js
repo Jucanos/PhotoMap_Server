@@ -9,7 +9,7 @@ const Router = require('@koa/router');
 // Koa 설정
 const app = new Koa();
 const router = new Router();
-router.prefix('/users');
+router.prefix('/hello');
 
 app.use(router.routes());
 app.use(router.allowedMethods());
@@ -18,30 +18,16 @@ app.use(router.allowedMethods());
 const awsXRay = require('aws-xray-sdk');
 const awsSdk = awsXRay.captureAWS(require('aws-sdk'));
 
-// util 가져오기
-const { statusCode, createResponse, isUndefined } = require('./modules/util');
-
-/**
- * Route: /users
- * Method: delete
- */
-
-/* 유저 삭제 */
-router.delete('/', async ctx => {
-  createResponse(ctx, statusCode.success, 'user delete');
+router.get('/', async ctx => {
+  ctx.body = {
+    statusCode: 200,
+    body: {
+      message: 'Go Serverless v1.0! Your function executed successfully!',
+      input: ctx,
+    },
+  };
 });
 
-/**
- * Route: /users/{uid}
- * Method: get
- */
-
-/* 유저 정보 가져오기 */
-router.get('/:id', async ctx => {
-  createResponse(ctx, statusCode.success, 'user get');
-});
-
-// Lambda로 내보내기
 module.exports.handler = serverless(app, {
   basePath: process.env.BASE_PATH,
   callbackWaitsForEmptyEventLoop: false,

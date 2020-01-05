@@ -22,6 +22,9 @@ custom:
     prod: true
   webpack:
     webpackConfig: 'webpack.config.js' # Name of webpack configuration file
+    includeModules:
+      forceInclude:
+        - serverless-http
     packager: 'npm' # Packager that will be used to package your external modules
     excludeFiles: src/**/*.test.js # Provide a glob for files to ignore
   dynamodb:
@@ -111,43 +114,41 @@ functions:
     tracing: true
     events:
       - http:
-          path: hello
+          path: /hello
           method: get
-  createStory:
-    handler: src/stories.createStory
+  # 유저 관련 함수
+  User:
+    handler: src/users.handler
     tracing: true
     events:
       - http:
-          path: stories
-          method: post
-  readStories:
-    handler: src/stories.readStories
-    tracing: true
-    events:
-      - http:
-          path: stories
+          path: /users/{any+}
           method: get
-  readStory:
-    handler: src/stories.readStory
-    tracing: true
-    events:
       - http:
-          path: stories/{id}
-          method: get
-  updateStory:
-    handler: src/stories.updateStory
-    tracing: true
-    events:
-      - http:
-          path: stories/{id}
-          method: patch
-  deleteStory:
-    handler: src/stories.deleteStory
-    tracing: true
-    events:
-      - http:
-          path: stories/{id}
+          path: /users
           method: delete
+  # 지도 관련 함수
+  Map:
+    handler: src/maps.handler
+    tracing: true
+    events:
+      - http:
+          path: /maps
+          method: ANY
+      - http:
+          path: /maps/{any+}
+          method: ANY
+  # 스토리 관련 함수
+  Story:
+    handler: src/stories.handler
+    tracing: true
+    events:
+      - http:
+          path: /stories
+          method: ANY
+      - http:
+          path: /stories/{any+}
+          method: ANY
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
@@ -186,6 +187,7 @@ functions:
 
 plugins:
   - serverless-dotenv-plugin
+  - serverless-plugin-tracing
   - serverless-domain-manager
   - serverless-webpack
   - serverless-dynamodb-local
@@ -194,6 +196,8 @@ plugins:
 #    environment:
 #      variable2: value2
 
+resources:
+  - ${file(resources/api-gateway.yml)}
 # you can add CloudFormation resource templates here
 #resources:
 #  Resources:
