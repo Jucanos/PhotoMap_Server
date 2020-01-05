@@ -24,6 +24,24 @@ custom:
     webpackConfig: 'webpack.config.js' # Name of webpack configuration file
     packager: 'npm' # Packager that will be used to package your external modules
     excludeFiles: src/**/*.test.js # Provide a glob for files to ignore
+  dynamodb:
+    # If you only want to use DynamoDB Local in some stages, declare them here
+    stages:
+      - dev
+    start:
+      port: 8000
+      inMemory: true
+      heapInitial: 200m
+      heapMax: 1g
+      migrate: true
+      seed: true
+      convertEmptyValues: true
+    tableThroughputs:
+      prod: 10
+      default: 1
+    tableThroughput: ${self:custom.dynamodb.tableThroughputs.${env:STAGE}, self:custom.dynamodb.tableThroughputs.default}
+    # Uncomment only if you already have a DynamoDB running locally
+    # noStart: true
   customDomain:
     domainName: soybeans.tech
     basePath: ${env:BASE_PATH}
@@ -170,6 +188,8 @@ plugins:
   - serverless-dotenv-plugin
   - serverless-domain-manager
   - serverless-webpack
+  - serverless-dynamodb-local
+  - serverless-offline
 #    Define function environment variables here
 #    environment:
 #      variable2: value2
