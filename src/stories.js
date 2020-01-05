@@ -20,8 +20,18 @@ app.use(router.allowedMethods());
 const awsXRay = require('aws-xray-sdk');
 const awsSdk = awsXRay.captureAWS(require('aws-sdk'));
 
-// util 가져오기
-const { statusCode, createResponse, isUndefined } = require('./modules/util');
+// Dynamoose 설정
+const Dynamoose = require('./modules/dynamo_schema');
+const Data = Dynamoose.Data;
+
+// DClass와 util 가져오기
+const DClass = require('./modules/dynamo_class');
+const {
+  statusCode,
+  createResponse,
+  isUndefined,
+  getUid,
+} = require('./modules/util');
 
 /**
  * Route: /stories/{mid}

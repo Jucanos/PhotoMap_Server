@@ -71,6 +71,19 @@ provider:
         - 'xray:PutelementryRecords'
       Resource:
         - '*'
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      # Restrict our IAM role permissions to
+      # the specific table for the stage
+      Resource:
+        - 'arn:aws:dynamodb:ap-northeast-2:*:*'
 
 # you can overwrite defaults here
 #  stage: dev
@@ -197,6 +210,7 @@ plugins:
 #      variable2: value2
 
 resources:
+  - ${file(resources/dynamodb-table.yml)}
   - ${file(resources/api-gateway.yml)}
 # you can add CloudFormation resource templates here
 #resources:

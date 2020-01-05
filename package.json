@@ -42,10 +42,12 @@
     "@koa/router": "^8.0.5",
     "aws-xray-sdk": "^2.5.0",
     "dotenv": "^8.2.0",
+    "dynamoose": "^1.11.1",
     "koa": "^2.11.0",
     "koa-body": "^4.1.1",
     "koa-bodyparser": "^4.2.1",
     "serverless-http": "^2.3.0",
-    "source-map-support": "^0.5.16"
+    "source-map-support": "^0.5.16",
+    "uuid4": "^1.1.4"
   }
 }

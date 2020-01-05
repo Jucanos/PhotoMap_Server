@@ -1,0 +1,32 @@
+Resources:
+  photoMapTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: ${env:DYNAMODB_TABLE}
+      AttributeDefinitions:
+        - AttributeName: PK
+          AttributeType: S
+        - AttributeName: SK
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+        - AttributeName: SK
+          KeyType: RANGE
+      # Set the capacity based on the stage
+      ProvisionedThroughput:
+        ReadCapacityUnits: ${self:custom.dynamodb.tableThroughput}
+        WriteCapacityUnits: ${self:custom.dynamodb.tableThroughput}
+      # Global Secondary Index
+      GlobalSecondaryIndexes:
+        - IndexName: GSI
+          KeySchema:
+            - AttributeName: SK
+              KeyType: HASH
+            - AttributeName: PK
+              KeyType: RANGE
+          Projection:
+            ProjectionType: ALL
+          ProvisionedThroughput:
+            ReadCapacityUnits: ${self:custom.dynamodb.tableThroughput}
+            WriteCapacityUnits: ${self:custom.dynamodb.tableThroughput}
