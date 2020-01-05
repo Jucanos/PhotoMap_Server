@@ -16,6 +16,42 @@ service: photomap-server
 #app: your-app-name
 #org: your-org-name
 
+custom:
+  package_individually:
+    dev: false
+    prod: true
+  webpack:
+    webpackConfig: 'webpack.config.js' # Name of webpack configuration file
+    includeModules:
+      forceInclude:
+        - serverless-http
+    packager: 'npm' # Packager that will be used to package your external modules
+    excludeFiles: src/**/*.test.js # Provide a glob for files to ignore
+  dynamodb:
+    # If you only want to use DynamoDB Local in some stages, declare them here
+    stages:
+      - dev
+    start:
+      port: 8000
+      inMemory: true
+      heapInitial: 200m
+      heapMax: 1g
+      migrate: true
+      seed: true
+      convertEmptyValues: true
+    tableThroughputs:
+      prod: 10
+      default: 1
+    tableThroughput: ${self:custom.dynamodb.tableThroughputs.${env:STAGE}, self:custom.dynamodb.tableThroughputs.default}
+    # Uncomment only if you already have a DynamoDB running locally
+    # noStart: true
+  customDomain:
+    domainName: soybeans.tech
+    basePath: ${env:BASE_PATH}
+    stage: ${env:STAGE}
+    certificateName: 'soybeans.tech'
+    createRoute53Record: true
+
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
 # frameworkVersion: "=X.X.X"
@@ -23,8 +59,31 @@ service: photomap-server
 provider:
   name: aws
   runtime: nodejs10.x
-  stage: dev
+  stage: ${env:STAGE}
   region: ap-northeast-2
+  tracing:
+    apiGateway: true
+    lambda: true
+  iamRoleStatements:
+    - Effect: 'Allow'
+      Action:
+        - 'xray:PutTraceSegments'
+        - 'xray:PutelementryRecords'
+      Resource:
+        - '*'
+    - Effect: Allow
+      Action:
+        - dynamodb:DescribeTable
+        - dynamodb:Query
+        - dynamodb:Scan
+        - dynamodb:GetItem
+        - dynamodb:PutItem
+        - dynamodb:UpdateItem
+        - dynamodb:DeleteItem
+      # Restrict our IAM role permissions to
+      # the specific table for the stage
+      Resource:
+        - 'arn:aws:dynamodb:ap-northeast-2:*:*'
 
 # you can overwrite defaults here
 #  stage: dev
@@ -49,6 +108,8 @@ provider:
 # you can define service wide environment variables here
 #  environment:
 #    variable1: value1
+package:
+  individually: ${self:custom.package_individually.${env:STAGE}, false}
 
 # you can add packaging information here
 #package:
@@ -60,42 +121,47 @@ provider:
 #    - exclude-me-dir/**
 
 functions:
+  # 기본 테스트용 함수
   hello:
-    handler: handler.hello
+    handler: index.handler
+    tracing: true
     events:
       - http:
-          path: hello
+          path: /hello
           method: get
-  createStory:
-    handler: src/stories.createStory
+  # 유저 관련 함수
+  User:
+    handler: src/users.handler
+    tracing: true
     events:
       - http:
-          path: stories
-          method: post
-  readStories:
-    handler: src/stories.readStories
-    events:
-      - http:
-          path: stories
+          path: /users/{any+}
           method: get
-  readStory:
-    handler: src/stories.readStory
-    events:
       - http:
-          path: stories/{id}
-          method: get
-  updateStory:
-    handler: src/stories.updateStory
-    events:
-      - http:
-          path: stories/{id}
-          method: patch
-  deleteStory:
-    handler: src/stories.deleteStory
-    events:
-      - http:
-          path: stories/{id}
+          path: /users
           method: delete
+  # 지도 관련 함수
+  Map:
+    handler: src/maps.handler
+    tracing: true
+    events:
+      - http:
+          path: /maps
+          method: ANY
+      - http:
+          path: /maps/{any+}
+          method: ANY
+  # 스토리 관련 함수
+  Story:
+    handler: src/stories.handler
+    tracing: true
+    events:
+      - http:
+          path: /stories
+          method: ANY
+      - http:
+          path: /stories/{any+}
+          method: ANY
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
@@ -132,10 +198,20 @@ functions:
 #            host: example.com
 #            path: /hello
 
+plugins:
+  - serverless-dotenv-plugin
+  - serverless-plugin-tracing
+  - serverless-domain-manager
+  - serverless-webpack
+  - serverless-dynamodb-local
+  - serverless-offline
 #    Define function environment variables here
 #    environment:
 #      variable2: value2
 
+resources:
+  - ${file(resources/dynamodb-table.yml)}
+  - ${file(resources/api-gateway.yml)}
 # you can add CloudFormation resource templates here
 #resources:
 #  Resources:
