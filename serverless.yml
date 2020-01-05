@@ -17,9 +17,12 @@ service: photomap-server
 #org: your-org-name
 
 custom:
+  package_individually:
+    dev: false
+    prod: true
   webpack:
-    webpackConfig: "webpack.config.js" # Name of webpack configuration file
-    packager: "npm" # Packager that will be used to package your external modules
+    webpackConfig: 'webpack.config.js' # Name of webpack configuration file
+    packager: 'npm' # Packager that will be used to package your external modules
     excludeFiles: src/**/*.test.js # Provide a glob for files to ignore
 
 # You can pin your service to only deploy with a specific Serverless version
@@ -29,7 +32,7 @@ custom:
 provider:
   name: aws
   runtime: nodejs10.x
-  stage: dev
+  stage: ${env:STAGE}
   region: ap-northeast-2
 
 # you can overwrite defaults here
@@ -55,6 +58,8 @@ provider:
 # you can define service wide environment variables here
 #  environment:
 #    variable1: value1
+package:
+  individually: ${self:custom.package_individually.${env:STAGE}, false}
 
 # you can add packaging information here
 #package:
@@ -139,6 +144,7 @@ functions:
 #            path: /hello
 
 plugins:
+  - serverless-dotenv-plugin
   - serverless-webpack
 #    Define function environment variables here
 #    environment:
