@@ -24,6 +24,12 @@ custom:
     webpackConfig: 'webpack.config.js' # Name of webpack configuration file
     packager: 'npm' # Packager that will be used to package your external modules
     excludeFiles: src/**/*.test.js # Provide a glob for files to ignore
+  customDomain:
+    domainName: soybeans.tech
+    basePath: ${env:BASE_PATH}
+    stage: ${env:STAGE}
+    certificateName: 'soybeans.tech'
+    createRoute53Record: true
 
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
@@ -145,6 +151,7 @@ functions:
 
 plugins:
   - serverless-dotenv-plugin
+  - serverless-domain-manager
   - serverless-webpack
 #    Define function environment variables here
 #    environment:
