@@ -43,7 +43,60 @@ router.delete('/', async ctx => {
 
 /* 유저 정보 가져오기 */
 router.get('/:id', async ctx => {
-  createResponse(ctx, statusCode.success, 'user get');
+  // 파라미터 가져오기
+  const uid = ctx.params.id;
+  const nickname = ctx.query.nickname || '닉네임';
+  const thumbnail =
+    ctx.query.thumbnail ||
+    `${process.env.CLOUDFRONT_S3_PHOTOMAP}/default_user.png`;
+
+  // 초기값 설정
+  let userData = new DClass.User({
+    uid,
+    nickname,
+    thumbnail,
+  });
+
+  // uid에 해당하는 user의 count
+  const user = await Data.queryOne('PK')
+    .eq(uid)
+    .exec();
+
+  // user가 존재하지 않으면 회원등록
+  if (isUndefined(user)) {
+    const newUser = new Data(userData.json());
+    await newUser.save();
+  }
+  // user가 존재하면 회원정보 반환
+  else {
+    let userDB = DClass.parseClass(user);
+
+    // nickname과 thumbnail중 하나라도 다르면
+    if (!userData.equal(userDB)) {
+      userDB.update(userData);
+      await Data.update(userDB.json());
+    }
+  }
+
+  // JWT 반환
+  const payload = {
+    uid: userData.uid,
+  };
+
+  await new Promise((resolve, reject) => {
+    jwt.sign(
+      payload,
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRATION_TIME },
+      (err, token) => {
+        if (err) {
+          reject(createResponse(ctx, statusCode.serverError, null, err));
+        } else {
+          resolve(createResponse(ctx, statusCode.success, { token }));
+        }
+      }
+    );
+  });
 });
 
 // Lambda로 내보내기
