@@ -177,7 +177,63 @@ router.patch('/:id', bodyParser(), async ctx => {
 
 /* 지도 삭제 */
 router.delete('/:id', async ctx => {
-  createResponse(ctx, statusCode.success, 'map delete');
+  // JWT에서 uid 가져오기
+  const uid = getUid(ctx);
+
+  // 파라미터 가져오기
+  const mid = ctx.params.id;
+
+  // mid에 해당하는 map의 count
+  const maps = await Data.query('PK')
+    .eq(mid)
+    .exec();
+
+  // DB에 mid에 해당하는 지도가 없음
+  if (maps.count == 0) {
+    return createResponse(
+      ctx,
+      statusCode.failure,
+      null,
+      'this map is already deleted'
+    );
+  }
+
+  // 가져온 document에서 map만 뽑아낸다.
+  let deleteQueue = [];
+  let isOwner = false;
+  for (let i = 0; i < maps.count; i++) {
+    deleteQueue.push(maps[i]);
+
+    // 삭제하려는 소유자가 지도에 소속되어있는지 확인
+    if (maps[i].SK == uid) isOwner = true;
+  }
+
+  // 소유자가 아니면 삭제 불가
+  if (!isOwner) {
+    return createResponse(
+      ctx,
+      statusCode.authorizationFailure,
+      null,
+      'this map is not yours'
+    );
+  }
+
+  // 스토리와 로그도 삭제
+  const storyLogs = await Data.query('SK')
+    .using('GSI')
+    .eq(mid)
+    .exec();
+
+  for (let i = 0; i < storyLogs.count; i++) {
+    deleteQueue.push(storyLogs[i]);
+  }
+
+  // 삭제를 기다린다.
+  await Promise.all(deleteQueue.map(q => q.delete()));
+
+  // TODO: s3 폴더 삭제
+
+  createResponse(ctx, statusCode.processingSuccess, null);
 });
 
 // Lambda로 내보내기
