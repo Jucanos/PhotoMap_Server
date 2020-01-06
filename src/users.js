@@ -33,7 +33,58 @@ const { statusCode, createResponse, isUndefined } = require('./modules/util');
 
 /* 유저 삭제 */
 router.delete('/', async ctx => {
-  createResponse(ctx, statusCode.success, 'user delete');
+  // JWT에서 uid 가져오기
+  const uid = getUid(ctx);
+
+  // uid로 User 객체 생성
+  const exUserData = new DClass.User({
+    uid,
+  });
+  const exUser = new Data(exUserData.json());
+
+  // 삭제할 model들 queue
+  let deleteQueue = [];
+
+  // user를 삭제할 queue에 담는다.
+  deleteQueue.push(exUser);
+
+  // uid에 해당하는 user의 count
+  const maps = await Data.query('SK')
+    .using('GSI')
+    .eq(uid)
+    .exec();
+
+  // delete promise들을 queue에 담는다.
+  for (let i = 0; i < maps.count; i++) {
+    // 지도에 사람없는지 체크
+    const deleteMap = await Data.query('PK')
+      .eq(maps[i].PK)
+      .exec();
+
+    if (deleteMap.count <= 2) {
+      for (let i = 0; i < deleteMap.count; i++) {
+        deleteQueue.push(deleteMap[i]);
+      }
+
+      // 스토리와 로그도 삭제
+      const storyLogs = await Data.query('SK')
+        .using('GSI')
+        .eq(maps[i].PK)
+        .exec();
+
+      // TODO: 지도 삭제시 연결된 S3의 지도폴더도 삭제 필요
+
+      for (let i = 0; i < storyLogs.count; i++) {
+        deleteQueue.push(storyLogs[i]);
+      }
+    } else {
+      deleteQueue.push(maps[i]);
+    }
+  }
+  // 전부 delete가 될때까지 대기
+  await Promise.all(deleteQueue.map(q => q.delete()));
+
+  createResponse(ctx, statusCode.processingSuccess, null);
 });
 
 /**
@@ -43,7 +94,60 @@ router.delete('/', async ctx => {
 
 /* 유저 정보 가져오기 */
 router.get('/:id', async ctx => {
-  createResponse(ctx, statusCode.success, 'user get');
+  // 파라미터 가져오기
+  const uid = ctx.params.id;
+  const nickname = ctx.query.nickname || '닉네임';
+  const thumbnail =
+    ctx.query.thumbnail ||
+    `${process.env.CLOUDFRONT_S3_PHOTOMAP}/default_user.png`;
+
+  // 초기값 설정
+  let userData = new DClass.User({
+    uid,
+    nickname,
+    thumbnail,
+  });
+
+  // uid에 해당하는 user의 count
+  const user = await Data.queryOne('PK')
+    .eq(uid)
+    .exec();
+
+  // user가 존재하지 않으면 회원등록
+  if (isUndefined(user)) {
+    const newUser = new Data(userData.json());
+    await newUser.save();
+  }
+  // user가 존재하면 회원정보 반환
+  else {
+    let userDB = DClass.parseClass(user);
+
+    // nickname과 thumbnail중 하나라도 다르면
+    if (!userData.equal(userDB)) {
+      userDB.update(userData);
+      await Data.update(userDB.json());
+    }
+  }
+
+  // JWT 반환
+  const payload = {
+    uid: userData.uid,
+  };
+
+  await new Promise((resolve, reject) => {
+    jwt.sign(
+      payload,
+      process.env.JWT_SECRET,
+      { expiresIn: process.env.JWT_EXPIRATION_TIME },
+      (err, token) => {
+        if (err) {
+          reject(createResponse(ctx, statusCode.serverError, null, err));
+        } else {
+          resolve(createResponse(ctx, statusCode.success, { token }));
+        }
+      }
+    );
+  });
 });
 
 // Lambda로 내보내기
