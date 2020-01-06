@@ -87,7 +87,32 @@ router.post('/', async ctx => {
 
 /* 특정 지도 정보 가져오기 */
 router.get('/:id', async ctx => {
-  createResponse(ctx, statusCode.success, 'map get');
+  // 파라미터 가져오기
+  const mid = ctx.params.id;
+
+  // 지도 정보 가져오기
+  const maps = await Data.queryOne('PK')
+    .eq(mid)
+    .where('SK')
+    .eq('INFO')
+    .exec();
+
+  if (isUndefined(maps)) {
+    return createResponse(ctx, statusCode.failure, null, 'map is not exist');
+  }
+
+  let data = DClass.parseClass(maps);
+
+  // TODO: 스토리와 로그 완성 후 가져오는거 추가
+  // 다른 정보 가져오기
+  // const contents = await Data.query('SK')
+  //   .using('GSI')
+  //   .eq(mid)
+  //   .exec();
+
+  // console.log(contents);
+
+  createResponse(ctx, statusCode.success, data);
 });
 
 /* 지도에 사용자 추가/삭제 */
