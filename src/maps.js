@@ -117,7 +117,62 @@ router.get('/:id', async ctx => {
 
 /* 지도에 사용자 추가/삭제 */
 router.patch('/:id', bodyParser(), async ctx => {
-  createResponse(ctx, statusCode.success, 'map patch');
+  // JWT에서 uid 가져오기
+  const uid = getUid(ctx);
+
+  // 파라미터 가져오기
+  const mid = ctx.params.id;
+  const remove = ctx.request.body.remove || false;
+
+  // 지도 정보 가져오기
+  const maps = await Data.query('PK')
+    .eq(mid)
+    .exec();
+
+  if (isUndefined(maps)) {
+    return createResponse(ctx, statusCode.failure, null, 'map is not exist');
+  }
+
+  // 지도-유저 생성
+  const userMapData = new DClass.UserMap({
+    mid,
+    uid,
+  });
+  const newUserMap = new Data(userMapData.json());
+
+  // 소유자 삭제 & 지도의 유지자가 없는경우 지도도 삭제
+  if (maps.count <= 2 && remove) {
+    let deleteQueue = [];
+    for (let i = 0; i < maps.count; i++) {
+      deleteQueue.push(maps[i]);
+    }
+
+    // 스토리와 로그도 삭제
+    const storyLogs = await Data.query('SK')
+      .using('GSI')
+      .eq(mid)
+      .exec();
+
+    // TODO: 지도 삭제시 연결된 S3의 지도폴더도 삭제 필요
+
+    for (let i = 0; i < storyLogs.count; i++) {
+      deleteQueue.push(storyLogs[i]);
+    }
+
+    // 삭제를 기다린다.
+    await Promise.all(deleteQueue.map(q => q.delete()));
+  } else {
+    // 사용자 삭제
+    if (remove) {
+      await newUserMap.delete();
+    }
+    //사용자 추가
+    else {
+      await newUserMap.save();
+    }
+  }
+
+  createResponse(ctx, statusCode.processingSuccess, null);
 });
 
 /* 지도 삭제 */
