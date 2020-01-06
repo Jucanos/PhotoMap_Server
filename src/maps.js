@@ -39,7 +39,23 @@ const {
 
 /* 지도 리스트 가져오기 */
 router.get('/', async ctx => {
-  createResponse(ctx, statusCode.success, 'map list');
+  // JWT에서 uid 가져오기
+  const uid = getUid(ctx);
+
+  // uid에 해당하는 user의 count
+  const maps = await Data.query('SK')
+    .using('GSI')
+    .eq(uid)
+    .exec();
+
+  // 지도-유저에서 mid들을 뽑아서 넣는다.
+  let mapData = [];
+  for (let i = 0; i < maps.count; i++) {
+    const relation = DClass.parseClass(maps[i]);
+    mapData.push(relation.mid);
+  }
+
+  createResponse(ctx, statusCode.success, mapData);
 });
 
 /* 새로운 지도 생성 */
