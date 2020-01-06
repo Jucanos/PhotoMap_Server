@@ -60,7 +60,24 @@ router.get('/', async ctx => {
 
 /* 새로운 지도 생성 */
 router.post('/', async ctx => {
-  createResponse(ctx, statusCode.success, 'map post');
+  // JWT에서 uid 가져오기
+  const uid = getUid(ctx);
+
+  // 새로운 지도 생성
+  const mapData = new DClass.Map();
+  const newMap = new Data(mapData.json());
+  await newMap.save();
+
+  // 지도-유저 연결
+  const userMapData = new DClass.UserMap({
+    mid: mapData.mid,
+    uid,
+  });
+
+  const newUserMap = new Data(userMapData.json());
+  await newUserMap.save();
+
+  createResponse(ctx, statusCode.success, mapData);
 });
 
 /**
