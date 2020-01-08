@@ -182,7 +182,54 @@ router.patch('/:id', bodyParser(), async ctx => {
 
 /* 스토리 삭제 */
 router.delete('/:id', async ctx => {
-  createResponse(ctx, statusCode.success, 'story delete');
+  // JWT에서 uid 가져오기
+  const uid = getUid(ctx);
+
+  // 파라미터 가져오기
+  const sid = ctx.params.id;
+
+  // sid에 해당하는 story 확인
+  const story = await Data.queryOne('PK')
+    .eq(sid)
+    .exec();
+
+  // DB에 sid에 해당하는 스토리가 없음
+  if (isUndefined(story)) {
+    return createResponse(
+      ctx,
+      statusCode.failure,
+      null,
+      'this story is already deleted'
+    );
+  }
+
+  // Story에서 Data추출
+  const storyData = DClass.parseClass(story);
+
+  // 소유권 체크
+  const owner = await Data.queryOne('PK')
+    .eq(storyData.mid)
+    .where('SK')
+    .eq(uid)
+    .exec();
+
+  // 소유자가 아니면 삭제 불가
+  if (isUndefined(owner)) {
+    return createResponse(
+      ctx,
+      statusCode.authorizationFailure,
+      null,
+      'this story is not yours'
+    );
+  }
+
+  // 삭제를 기다린다.
+  await story.delete();
+
+  // s3 객체를 삭제한다.
+  await deleteObject(storyData.file);
+
+  createResponse(ctx, statusCode.processingSuccess, null);
 });
 
 // Lambda로 내보내기
