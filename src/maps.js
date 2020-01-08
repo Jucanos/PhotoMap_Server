@@ -19,6 +19,9 @@ app.use(router.allowedMethods());
 const awsXRay = require('aws-xray-sdk');
 const awsSdk = awsXRay.captureAWS(require('aws-sdk'));
 
+// s3 가져오기
+const { deleteFolder } = require('./modules/s3_util');
+
 // Dynamoose 설정
 const Dynamoose = require('./modules/dynamo_schema');
 const Data = Dynamoose.Data;
@@ -154,6 +157,7 @@ router.patch('/:id', bodyParser(), async ctx => {
       .exec();
 
     // TODO: 지도 삭제시 연결된 S3의 지도폴더도 삭제 필요
+    deleteFolder(mid);
 
     for (let i = 0; i < storyLogs.count; i++) {
       deleteQueue.push(storyLogs[i]);
@@ -231,7 +235,8 @@ router.delete('/:id', async ctx => {
   // 삭제를 기다린다.
   await Promise.all(deleteQueue.map(q => q.delete()));
 
-  // TODO: s3 폴더 삭제
+  // s3 폴더 삭제
+  deleteFolder(mid);
 
   createResponse(ctx, statusCode.processingSuccess, null);
 });

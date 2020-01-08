@@ -18,13 +18,24 @@ app.use(router.allowedMethods());
 const awsXRay = require('aws-xray-sdk');
 const awsSdk = awsXRay.captureAWS(require('aws-sdk'));
 
+// JWT 가져오기
+const jwt = require('jsonwebtoken');
+
+// s3 가져오기
+const { deleteFolder } = require('./modules/s3_util');
+
 // Dynamoose 설정
 const Dynamoose = require('./modules/dynamo_schema');
 const Data = Dynamoose.Data;
 
 // DClass와 util 가져오기
 const DClass = require('./modules/dynamo_class');
-const { statusCode, createResponse, isUndefined } = require('./modules/util');
+const {
+  statusCode,
+  createResponse,
+  isUndefined,
+  getUid,
+} = require('./modules/util');
 
 /**
  * Route: /users
@@ -72,7 +83,7 @@ router.delete('/', async ctx => {
         .eq(maps[i].PK)
         .exec();
 
-      // TODO: 지도 삭제시 연결된 S3의 지도폴더도 삭제 필요
+      deleteFolder(maps[i].PK);
 
       for (let i = 0; i < storyLogs.count; i++) {
         deleteQueue.push(storyLogs[i]);

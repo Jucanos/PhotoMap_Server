@@ -71,6 +71,11 @@ provider:
         - 'xray:PutelementryRecords'
       Resource:
         - '*'
+    - Effect: 'Allow'
+      Action:
+        - 's3:*'
+      Resource:
+        - 'arn:aws:s3:::photomap/*'
     - Effect: Allow
       Action:
         - dynamodb:DescribeTable

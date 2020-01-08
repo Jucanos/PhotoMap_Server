@@ -1,0 +1,17 @@
+Resources:
+  UploadBucket:
+    Type: AWS::S3::Bucket
+    Properties:
+      BucketName: ${env:S3_BUCKET_NAME}
+      AccessControl: PublicRead
+      CorsConfiguration:
+        CorsRules:
+          - AllowedMethods:
+              - GET
+              - PUT
+              - POST
+              - HEAD
+            AllowedOrigins:
+              - '*'
+            AllowedHeaders:
+              - '*'
