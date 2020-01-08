@@ -152,7 +152,32 @@ router.get('/:id', async ctx => {
 
 /* 스토리 수정 */
 router.patch('/:id', bodyParser(), async ctx => {
-  createResponse(ctx, statusCode.success, 'story patch');
+  // 파라미터 가져오기
+  const sid = ctx.params.id;
+  const title = ctx.request.body.title || '';
+  const context = ctx.request.body.context || '';
+
+  // 스토리 가져오기
+  const story = await Data.queryOne('PK')
+    .eq(sid)
+    .exec();
+
+  // 스토리가 존재하지 않으면 오류처리
+  if (isUndefined(story)) {
+    return createResponse(
+      ctx,
+      statusCode.failure,
+      null,
+      'this story is not exist'
+    );
+  }
+
+  // 스토리를 업데이트
+  const storyData = new DClass.Story(story);
+  storyData.update({ title, context });
+  await Data.update(storyData.json());
+
+  createResponse(ctx, statusCode.processingSuccess, null);
 });
 
 /* 스토리 삭제 */
