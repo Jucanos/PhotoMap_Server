@@ -96,7 +96,33 @@ router.post('/:id', upload.single('img'), async ctx => {
 
 /* 한 지도의 cityKey에 대해서 여러개의 스토리들 가져오기 */
 router.get('/:id/:key', async ctx => {
-  createResponse(ctx, statusCode.success, 'story list');
+  // 파라미터 가져오기
+  const mid = ctx.params.id;
+  const cityKey = ctx.params.key;
+  // const updatedAt = ctx.query.updatedAt || 0;
+
+  // 스토리 가져오기
+  const storys = await Data.query('SK')
+    .using('GSI')
+    .eq(mid)
+    .filter('type')
+    .eq(`STORY.${cityKey}`)
+    // .filter('updatedAt')
+    // .gt(updatedAt)
+    .exec();
+  /*
+    주석친 부분은 최신만 가져오는 부분인데 스토리의 개수가 
+    17000개보다 크지 않을것으로 생각되어 주석처리함
+  */
+
+  // 반환할 데이터
+  let data = [];
+
+  storys.map(story => {
+    data.push(DClass.parseClass(story));
+  });
+
+  createResponse(ctx, statusCode.success, data);
 });
 
 /**
