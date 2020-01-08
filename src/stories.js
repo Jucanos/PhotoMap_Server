@@ -20,6 +20,9 @@ app.use(router.allowedMethods());
 const awsXRay = require('aws-xray-sdk');
 const awsSdk = awsXRay.captureAWS(require('aws-sdk'));
 
+// s3 가져오기
+const { upload, deleteObject } = require('./modules/s3_util');
+
 // Dynamoose 설정
 const Dynamoose = require('./modules/dynamo_schema');
 const Data = Dynamoose.Data;
@@ -30,6 +33,7 @@ const {
   statusCode,
   createResponse,
   isUndefined,
+  representsDefault,
   getUid,
 } = require('./modules/util');
 
@@ -40,7 +44,49 @@ const {
 
 /* 스토리 만들기 */
 router.post('/:id', upload.single('img'), async ctx => {
-  createResponse(ctx, statusCode.success, 'story post');
+  // 파라미터 가져오기
+  const mid = ctx.params.id;
+  const cityKey = ctx.request.body.cityKey;
+  const title = ctx.request.body.title || '';
+  const context = ctx.request.body.context || '';
+  const file = ctx.file;
+
+  console.log(file);
+
+  // cityKey 존재여부 확인
+  if (isUndefined(cityKey)) {
+    return createResponse(
+      ctx,
+      statusCode.failure,
+      null,
+      'cityKey is undefined'
+    );
+  }
+
+  // file 존재여부 확인
+  if (isUndefined(file)) {
+    return createResponse(ctx, statusCode.failure, null, 'file is undefined');
+  }
+
+  // cityKey가 valid한지 확인
+  if (representsDefault.indexOf(cityKey) == -1) {
+    return createResponse(ctx, statusCode.failure, null, 'cityKey is invalid');
+  }
+
+  // Story 객체 생성
+  const storyData = new DClass.Story({
+    mid,
+    cityKey,
+    title,
+    context,
+    file: process.env.S3_CUSTOM_DOMAIN + file.key,
+  });
+
+  // Story 저장
+  const newStory = new Data(storyData.json());
+  await newStory.save();
+
+  createResponse(ctx, statusCode.success, storyData);
 });
 
 /**

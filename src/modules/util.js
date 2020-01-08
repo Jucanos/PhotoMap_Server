@@ -31,6 +31,18 @@ exports.statusCode = Object.freeze({
   dataBaseError: 600, // DB에서 에러 발생
 });
 
+exports.representsDefault = [
+  'gyeonggi',
+  'gangwon',
+  'chungbuk',
+  'chungnam',
+  'jeonbuk',
+  'jeonnam',
+  'gyeongbuk',
+  'gyeongnam',
+  'jeju',
+];
+
 exports.uuid = () => {
   const tokens = uuid4().split('-');
   return tokens[2] + tokens[1] + tokens[0] + tokens[3] + tokens[4];
