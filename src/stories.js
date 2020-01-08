@@ -132,7 +132,22 @@ router.get('/:id/:key', async ctx => {
 
 /* 특정 스토리 읽기 */
 router.get('/:id', async ctx => {
-  createResponse(ctx, statusCode.success, 'story get');
+  const sid = ctx.params.id;
+
+  // sid로 스토리 가져오기
+  const story = await Data.queryOne('PK')
+    .eq(sid)
+    .exec();
+
+  // 스토리가 없다면 오류
+  if (isUndefined(story)) {
+    return createResponse(ctx, statusCode.failure, null, 'Story is not exist');
+  }
+
+  // 스토리 파싱하여 반환
+  const storyData = DClass.parseClass(story);
+
+  createResponse(ctx, statusCode.success, storyData);
 });
 
 /* 스토리 수정 */
