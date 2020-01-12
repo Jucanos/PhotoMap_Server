@@ -156,7 +156,7 @@ router.patch('/:id', bodyParser(), async ctx => {
       .eq(mid)
       .exec();
 
-    // TODO: 지도 삭제시 연결된 S3의 지도폴더도 삭제 필요
+    // 지도 삭제시 연결된 S3의 지도폴더도 삭제 필요
     deleteFolder(mid);
 
     for (let i = 0; i < storyLogs.count; i++) {
