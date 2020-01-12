@@ -53,7 +53,10 @@ module.exports.verify = (event, context, callback) => {
       }
       // is custom authorizer function
       console.log('valid from customAuthorizer', decoded);
-      return callback(null, generatePolicy('user', 'Allow', event.methodArn));
+      return callback(
+        null,
+        generatePolicy(decoded.uid, 'Allow', event.methodArn)
+      );
     });
   } catch (err) {
     console.log('catch error. Invalid token', err);

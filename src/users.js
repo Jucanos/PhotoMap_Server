@@ -83,6 +83,7 @@ router.delete('/', async ctx => {
         .eq(maps[i].PK)
         .exec();
 
+      // 지도에 연결된 s3 폴더 삭제
       deleteFolder(maps[i].PK);
 
       for (let i = 0; i < storyLogs.count; i++) {

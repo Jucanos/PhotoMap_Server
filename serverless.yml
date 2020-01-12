@@ -20,6 +20,12 @@ custom:
   package_individually:
     dev: false
     prod: true
+  apigwBinary:
+    types:
+      - 'multipart/form-data'
+      - 'image/png'
+      - 'image/jpeg'
+      - 'image/bmp'
   webpack:
     webpackConfig: 'webpack.config.js' # Name of webpack configuration file
     includeModules:
@@ -222,6 +228,7 @@ functions:
 
 plugins:
   - serverless-dotenv-plugin
+  - serverless-apigw-binary
   - serverless-plugin-tracing
   - serverless-domain-manager
   - serverless-webpack
