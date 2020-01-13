@@ -153,7 +153,7 @@ exports.Story = class Story extends Data {
       content: {
         title: this.title,
         context: this.context,
-        file: this.file,
+        files: this.files,
       },
     };
   }
