@@ -43,18 +43,22 @@ const {
  */
 
 /* 스토리 만들기 */
-router.post('/:id', upload.single('img'), async ctx => {
+router.post('/:id', upload.array('img', 5), async ctx => {
   // 파라미터 가져오기
   const mid = ctx.params.id;
   const cityKey = ctx.request.body.cityKey;
   const title = ctx.request.body.title || '';
   const context = ctx.request.body.context || '';
-  const file = ctx.file;
+  const files = ctx.files;
 
-  console.log(file);
+  console.log(files);
 
   // cityKey 존재여부 확인
   if (isUndefined(cityKey)) {
+    for (const i in files) {
+      deleteObject(files[i].key);
+    }
+
     return createResponse(
       ctx,
       statusCode.failure,
@@ -64,23 +68,36 @@ router.post('/:id', upload.single('img'), async ctx => {
   }
 
   // file 존재여부 확인
-  if (isUndefined(file)) {
-    return createResponse(ctx, statusCode.failure, null, 'file is undefined');
+  if (isUndefined(files) || files.length == 0) {
+    for (const i in files) {
+      deleteObject(files[i].key);
+    }
+
+    return createResponse(ctx, statusCode.failure, null, 'files are undefined');
   }
 
   // cityKey가 valid한지 확인
   if (representsDefault.indexOf(cityKey) == -1) {
+    for (const i in files) {
+      deleteObject(files[i].key);
+    }
+
     return createResponse(ctx, statusCode.failure, null, 'cityKey is invalid');
   }
 
   // Story 객체 생성
-  const storyData = new DClass.Story({
+  let storyData = new DClass.Story({
     mid,
     cityKey,
     title,
     context,
-    file: process.env.S3_CUSTOM_DOMAIN + file.key,
   });
+
+  // Story에 file들을 추가
+  storyData.files = [];
+  for (const i in files) {
+    storyData.files.push(process.env.S3_CUSTOM_DOMAIN + files[i].key);
+  }
 
   // Story 저장
   const newStory = new Data(storyData.json());
@@ -227,7 +244,9 @@ router.delete('/:id', async ctx => {
   await story.delete();
 
   // s3 객체를 삭제한다.
-  await deleteObject(storyData.file);
+  for (const i in storyData.files) {
+    await deleteObject(storyData.files[i]);
+  }
 
   createResponse(ctx, statusCode.processingSuccess, null);
 });

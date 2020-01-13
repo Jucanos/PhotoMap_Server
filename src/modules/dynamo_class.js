@@ -137,6 +137,7 @@ exports.Story = class Story extends Data {
     if (!isUndefined(options.content)) {
       this.sid = options.PK;
       this.mid = options.SK;
+      this.cityKey = options.type.split('.')[1];
     }
 
     // sid 기본값
@@ -153,7 +154,7 @@ exports.Story = class Story extends Data {
       content: {
         title: this.title,
         context: this.context,
-        file: this.file,
+        files: this.files,
       },
     };
   }
