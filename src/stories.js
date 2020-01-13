@@ -190,7 +190,7 @@ router.patch('/:id', bodyParser(), async ctx => {
   }
 
   // 스토리를 업데이트
-  const storyData = new DClass.Story(story);
+  const storyData = DClass.parseClass(story);
   storyData.update({ title, context });
   await Data.update(storyData.json());
 

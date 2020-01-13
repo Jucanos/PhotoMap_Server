@@ -3,12 +3,12 @@ const { representsDefault, isUndefined, uuid } = require('./util');
 exports.parseClass = function(doc) {
   doc = doc.originalItem();
 
-  const type = doc.type.split('.')[0];
+  const type = doc.type.split('.');
   delete doc.type;
 
   let obj;
 
-  switch (type) {
+  switch (type[0]) {
     case 'USER':
       obj = new this.User(doc);
       break;
@@ -19,6 +19,7 @@ exports.parseClass = function(doc) {
       obj = new this.UserMap(doc);
       break;
     case 'STORY':
+      doc.cityKey = type[1];
       obj = new this.Story(doc);
       break;
     case 'LOG':
@@ -137,7 +138,7 @@ exports.Story = class Story extends Data {
     if (!isUndefined(options.content)) {
       this.sid = options.PK;
       this.mid = options.SK;
-      this.cityKey = options.type.split('.')[1];
+      this.cityKey = options.cityKey;
     }
 
     // sid 기본값
