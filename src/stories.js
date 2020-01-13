@@ -244,7 +244,9 @@ router.delete('/:id', async ctx => {
   await story.delete();
 
   // s3 객체를 삭제한다.
-  await deleteObject(storyData.file);
+  for (const i in storyData.files) {
+    await deleteObject(storyData.files[i]);
+  }
 
   createResponse(ctx, statusCode.processingSuccess, null);
 });

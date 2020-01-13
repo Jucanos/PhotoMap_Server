@@ -53,10 +53,13 @@ exports.putObject = async (ctx, tag) => {
 
 // 단일 객체 삭제
 exports.deleteObject = async obj => {
-  const params = {
+  let params = {
     Bucket: process.env.S3_BUCKET_NAME,
-    Key: obj.split(process.env.S3_CUSTOM_DOMAIN)[1],
   };
+
+  if (obj.includes(process.env.S3_CUSTOM_DOMAIN))
+    params.Key = obj.split(process.env.S3_CUSTOM_DOMAIN)[1];
+  else params.Key = obj;
 
   await s3.deleteObject(params).promise();
 };
