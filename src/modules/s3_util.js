@@ -69,6 +69,8 @@ exports.deleteFolder = async prefix => {
   };
   const data = await s3.listObjectsV2(listParams).promise();
 
+  if (data.KeyCount == 0) return;
+
   let deleteParams = {
     Bucket: process.env.S3_BUCKET_NAME,
     Delete: { Objects: data.Contents.map(a => ({ Key: a.Key })) },
