@@ -96,6 +96,11 @@ exports.Map = class Map extends Data {
         this.represents[city] = null;
       });
     }
+
+    // name 초기화
+    if (isUndefined(this.name)) {
+      this.name = '새 지도';
+    }
   }
 
   json() {
@@ -105,6 +110,7 @@ exports.Map = class Map extends Data {
       type: 'MAP',
       content: {
         represents: this.represents,
+        name: this.name,
       },
     };
   }
@@ -119,6 +125,11 @@ exports.UserMap = class UserMap extends Data {
       this.mid = options.PK;
       this.uid = options.SK;
     }
+
+    // name 초기화
+    if (isUndefined(this.name)) {
+      this.name = '새 지도';
+    }
   }
 
   json() {
@@ -126,6 +137,9 @@ exports.UserMap = class UserMap extends Data {
       PK: this.mid,
       SK: this.uid,
       type: 'USER-MAP',
+      content: {
+        name: this.name,
+      },
     };
   }
 };
