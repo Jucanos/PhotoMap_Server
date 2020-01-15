@@ -54,6 +54,12 @@ module.exports.verify = (event, context, callback) => {
       }
       const decoded = JSON.parse(body);
       console.log('valid from customAuthorizer', decoded);
+
+      if (process.env.KAKAO_APP_ID != decoded.appId) {
+        console.log('app is wrong', decoded.appId);
+        return callback('Unauthorized');
+      }
+
       return callback(
         null,
         generatePolicy(decoded.id, 'Allow', event.methodArn)
