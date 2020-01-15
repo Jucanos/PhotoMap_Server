@@ -2,9 +2,6 @@
 const awsXRay = require('aws-xray-sdk');
 const awsSdk = awsXRay.captureAWS(require('aws-sdk'));
 
-// JWT 가져오기
-const jwt = require('jsonwebtoken');
-
 // Request 가져오기
 const request = require('request');
 let options = {
@@ -13,12 +10,6 @@ let options = {
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
   },
-};
-
-// 인증정보 받아오기
-exports.refresh = async (event, ctx) => {
-  // TODO: JWT Refresh 구현
-  return createResponse(200, { message: 'refresh' });
 };
 
 // Policy helper function

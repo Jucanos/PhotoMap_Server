@@ -158,11 +158,8 @@ functions:
     tracing: true
     events:
       - http:
-          path: /users/{any+}
-          method: get
-      - http:
           path: /users
-          method: delete
+          method: ANY
           authorizer: authorize
   # 지도 관련 함수
   Map:
