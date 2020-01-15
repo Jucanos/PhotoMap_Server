@@ -49,5 +49,3 @@ exports.uuid = () => {
 };
 
 exports.getUid = ctx => ctx.req.requestContext.authorizer.principalId;
-
-exports.getAuth = ctx => ctx.request.header.authorization;

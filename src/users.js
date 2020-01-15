@@ -32,18 +32,10 @@ const {
   createResponse,
   isUndefined,
   getUid,
-  getAuth,
 } = require('./modules/util');
 
 // Request 가져오기
-const request = require('request-promise-native');
-let options = {
-  uri: 'https://kapi.kakao.com/v2/user/me',
-  method: 'POST',
-  headers: {
-    'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
-  },
-};
+const { paths, kakaoRequest } = require('./modules/kakao');
 
 /**
  * Route: /users
@@ -52,16 +44,13 @@ let options = {
 
 /* 유저 정보 가져오기 */
 router.get('/', async ctx => {
-  // Access Token 적용
-  options.headers.Authorization = getAuth(ctx);
-
   // 카카오톡 유저정보 가져오기
-  const result = JSON.parse(await request(options));
+  const result = await kakaoRequest(ctx, paths.getInfo);
 
   // 파라미터 추출하기
   const uid = result.id;
-  const nickname = result.properties.nickname;
-  const thumbnail = result.properties.thumbnail_image;
+  const nickname = result.kakao_account.profile.nickname;
+  const thumbnail = result.kakao_account.profile.thumbnail_image_url;
 
   // 초기값 설정
   let userData = new DClass.User({

@@ -3,14 +3,7 @@ const awsXRay = require('aws-xray-sdk');
 const awsSdk = awsXRay.captureAWS(require('aws-sdk'));
 
 // Request 가져오기
-const request = require('request');
-let options = {
-  uri: 'https://kapi.kakao.com/v1/user/access_token_info',
-  method: 'GET',
-  headers: {
-    'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
-  },
-};
+const { paths, request, getOptions } = require('./modules/kakao');
 
 // Policy helper function
 const generatePolicy = (principalId, effect, resource) => {
@@ -43,7 +36,7 @@ module.exports.verify = (event, context, callback) => {
     return callback('Unauthorized');
   }
 
-  options.headers.Authorization = event.authorizationToken;
+  const options = getOptions(paths.verify, event.authorizationToken);
 
   try {
     request(options, (err, response, body) => {
