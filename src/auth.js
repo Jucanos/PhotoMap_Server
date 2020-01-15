@@ -5,6 +5,16 @@ const awsSdk = awsXRay.captureAWS(require('aws-sdk'));
 // JWT 가져오기
 const jwt = require('jsonwebtoken');
 
+// Request 가져오기
+const request = require('request');
+let options = {
+  uri: 'https://kapi.kakao.com/v1/user/access_token_info',
+  method: 'GET',
+  headers: {
+    'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
+  },
+};
+
 // 인증정보 받아오기
 exports.refresh = async (event, ctx) => {
   // TODO: JWT Refresh 구현
@@ -34,7 +44,6 @@ module.exports.verify = (event, context, callback) => {
   if (!event.authorizationToken) {
     return callback('Unauthorized');
   }
-
   const tokenParts = event.authorizationToken.split(' ');
   const tokenValue = tokenParts[1];
 
@@ -43,19 +52,20 @@ module.exports.verify = (event, context, callback) => {
     return callback('Unauthorized');
   }
 
+  options.headers.Authorization = event.authorizationToken;
+
   try {
-    jwt.verify(tokenValue, process.env.JWT_SECRET, (verifyError, decoded) => {
-      if (verifyError) {
-        console.log('verifyError', verifyError);
-        // 401 Unauthorized
-        console.log(`Token invalid. ${verifyError}`);
+    request(options, (err, response, body) => {
+      if (err) {
+        console.log('verifyError', err);
+        console.log(`Token invalid. ${err}`);
         return callback('Unauthorized');
       }
-      // is custom authorizer function
+      const decoded = JSON.parse(body);
       console.log('valid from customAuthorizer', decoded);
       return callback(
         null,
-        generatePolicy(decoded.uid, 'Allow', event.methodArn)
+        generatePolicy(decoded.id, 'Allow', event.methodArn)
       );
     });
   } catch (err) {
