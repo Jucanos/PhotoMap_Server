@@ -101,17 +101,39 @@ router.get('/:id', async ctx => {
   const mid = ctx.params.id;
 
   // 지도 정보 가져오기
-  const maps = await Data.queryOne('PK')
+  const maps = await Data.query('PK')
     .eq(mid)
-    .where('SK')
-    .eq('INFO')
     .exec();
 
-  if (isUndefined(maps)) {
+  if (maps.count == 0) {
     return createResponse(ctx, statusCode.failure, null, 'map is not exist');
   }
 
-  let data = DClass.parseClass(maps);
+  // 지도정보와 사용자 정보 분리
+  let data = null;
+  let userList = [];
+  for (let i = 0; i < maps.count; i++) {
+    if (maps[i].type == 'MAP') {
+      data = DClass.parseClass(maps[i]);
+    } else {
+      userList.push({
+        PK: maps[i].SK,
+        SK: 'INFO',
+      });
+    }
+  }
+
+  // 소유자 정보 가져오기
+  const owners = await Data.batchGet(userList);
+
+  // 반환값에 소유자 정보 추가
+  data.owners = [];
+  for (let i in owners) {
+    let user = DClass.parseClass(owners[i]);
+    delete user.createdAt;
+    delete user.updatedAt;
+    data.owners.push(user);
+  }
 
   // TODO: 스토리와 로그 완성 후 가져오는거 추가
   // 다른 정보 가져오기
