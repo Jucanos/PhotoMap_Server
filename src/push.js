@@ -33,7 +33,7 @@ const {
 } = require('./modules/util');
 
 // Request 가져오기
-const { paths, kakaoRequest, getDevice } = require('./modules/kakao');
+const { paths, kakaoRequest, getDeviceType } = require('./modules/kakao');
 
 /**
  * Route: /push
@@ -70,7 +70,7 @@ router.post('/', bodyParser(), async ctx => {
   }
 
   // pushToken 등록
-  const push_type = getDevice(ctx);
+  const push_type = getDeviceType(ctx);
 
   if (push_type != null) {
     await kakaoRequest(ctx, paths.registerPushToken, {
@@ -86,6 +86,33 @@ router.post('/', bodyParser(), async ctx => {
 
 /* 푸시 토큰 삭제하기 */
 router.delete('/', bodyParser(), async ctx => {
+  // JWT에서 uid 가져오기
+  const uuid = getUid(ctx);
+
+  // 파라미터 가져오기
+  const device_id = ctx.query.deviceId;
+
+  // deviceId 존재여부 확인
+  if (isUndefined(device_id)) {
+    return createResponse(
+      ctx,
+      statusCode.requestError,
+      null,
+      'device id is required'
+    );
+  }
+
+  // pushToken 삭제
+  const push_type = getDeviceType(ctx);
+
+  if (push_type != null) {
+    await kakaoRequest(ctx, paths.deregisterPushToken, {
+      uuid,
+      device_id,
+      push_type,
+    });
+  }
+
   createResponse(ctx, statusCode.processingSuccess, null);
 });
 

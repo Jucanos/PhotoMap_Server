@@ -25,11 +25,12 @@ exports.paths = Object.freeze({
   getInfo: ['GET', '/v2/user/me', false],
   registerPushToken: ['POST', '/v1/push/register', true],
   deregisterPushToken: ['POST', '/v1/push/deregister', true],
+  searchPushToken: ['GET', '/v1/push/tokens', true],
 });
 
 exports.request = request;
 
-exports.getDevice = ctx => {
+exports.getDeviceType = ctx => {
   const user = ctx.request.header['user-agent'].toLowerCase();
 
   if (user.includes('postman')) {

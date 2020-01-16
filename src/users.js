@@ -35,7 +35,7 @@ const {
 } = require('./modules/util');
 
 // Request 가져오기
-const { paths, kakaoRequest, getDevice } = require('./modules/kakao');
+const { paths, kakaoRequest, getDeviceType } = require('./modules/kakao');
 
 /**
  * Route: /users
@@ -137,7 +137,27 @@ router.delete('/', async ctx => {
   // 전부 delete가 될때까지 대기
   await Promise.all(deleteQueue.map(q => q.delete()));
 
-  createResponse(ctx, statusCode.processingSuccess, null);
+  // 푸시토큰 조회
+  const result = await kakaoRequest(ctx, paths.searchPushToken, {
+    uuid: uid,
+  });
+
+  // 푸시토큰 삭제
+  const push_type = getDeviceType(ctx);
+
+  if (push_type != null) {
+    for (let i in push_type) {
+      const device_id = push_type[i].device_id;
+
+      await kakaoRequest(ctx, paths.deregisterPushToken, {
+        uuid: uid,
+        device_id,
+        push_type,
+      });
+    }
+  }
+
+  await createResponse(ctx, statusCode.processingSuccess, null);
 });
 
 // Lambda로 내보내기
