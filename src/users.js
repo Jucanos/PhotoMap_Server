@@ -37,6 +37,9 @@ const {
 // Request 가져오기
 const { paths, kakaoRequest, getDeviceType } = require('./modules/kakao');
 
+// Logger 가져오기
+const Logger = require('./modules/logger');
+
 /**
  * Route: /users
  * Method: get, delete
@@ -132,6 +135,9 @@ router.delete('/', async ctx => {
       }
     } else {
       deleteQueue.push(maps[i]);
+
+      // 로그
+      Logger(ctx, maps[i].PK);
     }
   }
   // 전부 delete가 될때까지 대기

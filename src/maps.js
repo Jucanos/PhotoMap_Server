@@ -35,6 +35,9 @@ const {
   getUid,
 } = require('./modules/util');
 
+// Logger 가져오기
+const Logger = require('./modules/logger');
+
 /**
  * Route: /maps
  * Method: get, post
@@ -86,6 +89,9 @@ router.post('/', bodyParser(), async ctx => {
 
   const newUserMap = new Data(userMapData.json());
   await newUserMap.save();
+
+  // 로그
+  Logger(ctx, mapData.mid);
 
   createResponse(ctx, statusCode.success, mapData);
 });
@@ -247,6 +253,9 @@ router.patch('/:id', bodyParser(), async ctx => {
       await newUserMap.save();
     }
   }
+
+  // 로그
+  Logger(ctx, mid);
 
   createResponse(ctx, statusCode.processingSuccess, null);
 });
