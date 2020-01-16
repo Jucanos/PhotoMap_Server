@@ -55,9 +55,19 @@ exports.kakaoRequest = async (ctx, path, form = {}) => {
   if (path[2]) options = this.getOptions(path, adminKey);
   else options = this.getOptions(path, getAuth(ctx));
 
-  options.form = form;
+  if (path[0] == 'GET') {
+    let query = '?';
+    const keys = Object.keys(form);
+    for (let i = 0; i < keys.length; i++) {
+      query += keys[i] + '=' + form[keys[i]];
+      if (i != keys.length - 1) query += '&';
+    }
+    options.uri += query;
+  } else options.form = form;
+  console.log(options);
 
   const result = await request_promise(options);
+  console.log(result);
 
   return JSON.parse(result);
 };

@@ -17,6 +17,13 @@ const generatePolicy = (principalId, effect, resource) => {
     statementOne.Action = 'execute-api:Invoke';
     statementOne.Effect = effect;
     statementOne.Resource = resource;
+    const statementTwo = {};
+    statementTwo.Action = 's3:*';
+    statementTwo.Effect = effect;
+    statementTwo.Resource = [
+      'arn:aws:s3:::photomap',
+      'arn:aws:s3:::photomap/*',
+    ];
     policyDocument.Statement[0] = statementOne;
     authResponse.policyDocument = policyDocument;
   }

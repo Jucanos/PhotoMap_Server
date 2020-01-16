@@ -81,6 +81,7 @@ provider:
       Action:
         - 's3:*'
       Resource:
+        - 'arn:aws:s3:::photomap'
         - 'arn:aws:s3:::photomap/*'
     - Effect: Allow
       Action:

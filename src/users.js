@@ -141,6 +141,7 @@ router.delete('/', async ctx => {
   const result = await kakaoRequest(ctx, paths.searchPushToken, {
     uuid: uid,
   });
+  console.log(result);
 
   // 푸시토큰 삭제
   const push_type = getDeviceType(ctx);
