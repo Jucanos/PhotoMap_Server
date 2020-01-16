@@ -20,7 +20,7 @@ const awsXRay = require('aws-xray-sdk');
 const awsSdk = awsXRay.captureAWS(require('aws-sdk'));
 
 // s3 가져오기
-const { deleteFolder } = require('./modules/s3_util');
+const { upload, deleteObject, deleteFolder } = require('./modules/s3_util');
 
 // Dynamoose 설정
 const Dynamoose = require('./modules/dynamo_schema');
@@ -31,6 +31,7 @@ const DClass = require('./modules/dynamo_class');
 const {
   statusCode,
   createResponse,
+  representsDefault,
   isUndefined,
   getUid,
 } = require('./modules/util');
@@ -100,7 +101,7 @@ router.post('/', bodyParser(), async ctx => {
 
 /**
  * Route: /maps/{mid}
- * Method: get, put, patch, delete
+ * Method: get, post, put, patch, delete
  */
 
 /* 특정 지도 정보 가져오기 */
@@ -155,6 +156,67 @@ router.get('/:id', async ctx => {
   // console.log(contents);
 
   createResponse(ctx, statusCode.success, data);
+});
+
+/* 대표지도 설정하기 */
+router.post('/:id', upload.single('img'), async ctx => {
+  // 파라미터 가져오기
+  const mid = ctx.params.id;
+  const cityKey = ctx.request.body.cityKey;
+  const file = ctx.file;
+
+  console.log(file);
+
+  // file 존재여부 확인
+  if (isUndefined(file)) {
+    return createResponse(ctx, statusCode.failure, null, 'file is undefined');
+  }
+
+  // cityKey 존재여부 확인
+  if (isUndefined(cityKey)) {
+    deleteObject(file.key);
+
+    return createResponse(
+      ctx,
+      statusCode.failure,
+      null,
+      'cityKey is undefined'
+    );
+  }
+
+  // cityKey가 valid한지 확인
+  if (representsDefault.indexOf(cityKey) == -1) {
+    deleteObject(file.key);
+
+    return createResponse(ctx, statusCode.failure, null, 'cityKey is invalid');
+  }
+
+  const map = await Data.queryOne('PK')
+    .eq(mid)
+    .where('SK')
+    .eq('INFO')
+    .exec();
+
+  // 지도가 존재하는지 확인
+  if (isUndefined(map)) {
+    deleteObject(file.key);
+
+    return createResponse(ctx, statusCode.failure, null, 'map is not exist');
+  }
+
+  const mapData = DClass.parseClass(map);
+
+  // 이전 이미지 삭제
+  const beforeImg = mapData.represents[cityKey];
+  if (beforeImg != null) {
+    deleteObject(beforeImg);
+  }
+
+  // 현재 지도데이터 업데이트
+  mapData.represents[cityKey] = process.env.S3_CUSTOM_DOMAIN + file.key;
+  await Data.update(mapData.json());
+
+  createResponse(ctx, statusCode.success, mapData.represents);
 });
 
 /* 유저-지도의 이름 수정 */

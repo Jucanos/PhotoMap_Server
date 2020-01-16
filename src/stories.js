@@ -55,6 +55,11 @@ router.post('/:id', upload.array('img', 5), async ctx => {
 
   console.log(files);
 
+  // file 존재여부 확인
+  if (isUndefined(files) || files.length == 0) {
+    return createResponse(ctx, statusCode.failure, null, 'files are undefined');
+  }
+
   // cityKey 존재여부 확인
   if (isUndefined(cityKey)) {
     for (const i in files) {
@@ -67,15 +72,6 @@ router.post('/:id', upload.array('img', 5), async ctx => {
       null,
       'cityKey is undefined'
     );
-  }
-
-  // file 존재여부 확인
-  if (isUndefined(files) || files.length == 0) {
-    for (const i in files) {
-      deleteObject(files[i].key);
-    }
-
-    return createResponse(ctx, statusCode.failure, null, 'files are undefined');
   }
 
   // cityKey가 valid한지 확인

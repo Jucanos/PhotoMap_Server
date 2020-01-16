@@ -21,11 +21,16 @@ exports.upload = multer({
       cb(null, { fieldName: file.fieldname });
     },
     key: (req, file, cb) => {
+      let folder = '/';
+      if (req.url.split('/')[1] == 'maps') {
+        folder = '/represents/';
+      }
+
       cb(
         null,
         'uploads/' +
           req.url.split('/')[2] +
-          '/' +
+          folder +
           Date.now().toString() +
           file.originalname
       );
