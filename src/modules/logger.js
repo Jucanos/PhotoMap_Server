@@ -53,19 +53,19 @@ module.exports = async (ctx, mid, story = null) => {
   } else if (url == 'stories') {
     if (method == 'POST') {
       // POST
-      data = `${userData.nickname}님이 \
-      ${cityString[story.cityKey]} \
-      지역에 스토리를 추가했습니다.`;
+      data = `${userData.nickname}님이 ${
+        cityString[story.cityKey]
+      } 지역에 스토리를 추가했습니다.`;
     } else if (method == 'PATCH') {
       // PATCH
-      data = `${userData.nickname}님이 \
-      ${cityString[story.cityKey]} \
-      지역의 스토리「${story.title}」를 수정했습니다.`;
+      data = `${userData.nickname}님이 ${
+        cityString[story.cityKey]
+      } 지역의 스토리「${story.title}」를 수정했습니다.`;
     } else if (method == 'DELETE') {
       // DELETE
-      data = `${userData.nickname}님이 \
-      ${cityString[story.cityKey]} \
-      지역의 스토리「${story.title}」를 삭제했습니다.`;
+      data = `${userData.nickname}님이 ${
+        cityString[story.cityKey]
+      } 지역의 스토리「${story.title}」를 삭제했습니다.`;
     }
   }
 
