@@ -36,6 +36,9 @@ const {
   getUid,
 } = require('./modules/util');
 
+// Logger 가져오기
+const Logger = require('./modules/logger');
+
 /**
  * Route: /stories/{mid}
  * Method: post
@@ -102,6 +105,9 @@ router.post('/:id', upload.array('img', 5), async ctx => {
   const newStory = new Data(storyData.json());
   await newStory.save();
 
+  // 로그
+  Logger(ctx, mid, storyData);
+
   createResponse(ctx, statusCode.success, storyData);
 });
 
@@ -153,6 +159,8 @@ router.get('/:id', async ctx => {
   // sid로 스토리 가져오기
   const story = await Data.queryOne('PK')
     .eq(sid)
+    .filter('type')
+    .beginsWith('STORY')
     .exec();
 
   // 스토리가 없다면 오류
@@ -176,6 +184,8 @@ router.patch('/:id', bodyParser(), async ctx => {
   // 스토리 가져오기
   const story = await Data.queryOne('PK')
     .eq(sid)
+    .filter('type')
+    .beginsWith('STORY')
     .exec();
 
   // 스토리가 존재하지 않으면 오류처리
@@ -193,6 +203,9 @@ router.patch('/:id', bodyParser(), async ctx => {
   storyData.update({ title, context });
   await Data.update(storyData.json());
 
+  // 로그
+  Logger(ctx, storyData.mid, storyData);
+
   createResponse(ctx, statusCode.processingSuccess, null);
 });
 
@@ -207,6 +220,8 @@ router.delete('/:id', async ctx => {
   // sid에 해당하는 story 확인
   const story = await Data.queryOne('PK')
     .eq(sid)
+    .filter('type')
+    .beginsWith('STORY')
     .exec();
 
   // DB에 sid에 해당하는 스토리가 없음
@@ -246,6 +261,9 @@ router.delete('/:id', async ctx => {
   for (const i in storyData.files) {
     await deleteObject(storyData.files[i]);
   }
+
+  // 로그
+  Logger(ctx, storyData.mid, storyData);
 
   createResponse(ctx, statusCode.processingSuccess, null);
 });

@@ -37,6 +37,9 @@ const {
 // Request 가져오기
 const { paths, kakaoRequest, getDeviceType } = require('./modules/kakao');
 
+// Logger 가져오기
+const Logger = require('./modules/logger');
+
 /**
  * Route: /users
  * Method: get, delete
@@ -62,6 +65,8 @@ router.get('/', async ctx => {
   // uid에 해당하는 user의 count
   const user = await Data.queryOne('PK')
     .eq(uid)
+    .filter('type')
+    .eq('USER')
     .exec();
 
   // user가 존재하지 않으면 회원등록
@@ -100,10 +105,12 @@ router.delete('/', async ctx => {
   // user를 삭제할 queue에 담는다.
   deleteQueue.push(exUser);
 
-  // uid에 해당하는 user의 count
+  // uid에 해당하는 user-map의 count
   const maps = await Data.query('SK')
     .using('GSI')
     .eq(uid)
+    .filter('type')
+    .eq('USER-MAP')
     .exec();
 
   // delete promise들을 queue에 담는다.
@@ -111,6 +118,8 @@ router.delete('/', async ctx => {
     // 지도에 사람없는지 체크
     const deleteMap = await Data.query('PK')
       .eq(maps[i].PK)
+      .filter('type')
+      .in(['MAP', 'USER-MAP'])
       .exec();
 
     if (deleteMap.count <= 2) {
@@ -132,6 +141,9 @@ router.delete('/', async ctx => {
       }
     } else {
       deleteQueue.push(maps[i]);
+
+      // 로그
+      Logger(ctx, maps[i].PK);
     }
   }
   // 전부 delete가 될때까지 대기

@@ -188,6 +188,15 @@ functions:
           path: /stories/{any+}
           method: ANY
           authorizer: authorize
+  # 로그 관련 함수
+  Log:
+    handler: src/logs.handler
+    tracing: true
+    events:
+      - http:
+          path: /logs/{any+}
+          method: GET
+          authorizer: authorize
   # 푸시 관련 함수
   Push:
     handler: src/push.handler

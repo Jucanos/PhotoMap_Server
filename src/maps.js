@@ -35,6 +35,9 @@ const {
   getUid,
 } = require('./modules/util');
 
+// Logger 가져오기
+const Logger = require('./modules/logger');
+
 /**
  * Route: /maps
  * Method: get, post
@@ -49,6 +52,8 @@ router.get('/', async ctx => {
   const maps = await Data.query('SK')
     .using('GSI')
     .eq(uid)
+    .filter('type')
+    .eq('USER-MAP')
     .exec();
 
   // 지도-유저에서 mid들을 뽑아서 넣는다.
@@ -87,6 +92,9 @@ router.post('/', bodyParser(), async ctx => {
   const newUserMap = new Data(userMapData.json());
   await newUserMap.save();
 
+  // 로그
+  Logger(ctx, mapData.mid);
+
   createResponse(ctx, statusCode.success, mapData);
 });
 
@@ -103,6 +111,8 @@ router.get('/:id', async ctx => {
   // 지도 정보 가져오기
   const maps = await Data.query('PK')
     .eq(mid)
+    .filter('type')
+    .in(['MAP', 'USER-MAP'])
     .exec();
 
   if (maps.count == 0) {
@@ -200,8 +210,10 @@ router.patch('/:id', bodyParser(), async ctx => {
   const remove = ctx.request.body.remove || false;
 
   // 지도 정보 가져오기
-  const maps = await Data.query('PK')
+  const maps = await Data.queryOne('PK')
     .eq(mid)
+    .filter('type')
+    .eq('MAP')
     .exec();
 
   if (isUndefined(maps)) {
@@ -248,6 +260,9 @@ router.patch('/:id', bodyParser(), async ctx => {
     }
   }
 
+  // 로그
+  Logger(ctx, mid);
+
   createResponse(ctx, statusCode.processingSuccess, null);
 });
 
@@ -262,6 +277,8 @@ router.delete('/:id', async ctx => {
   // mid에 해당하는 map의 count
   const maps = await Data.query('PK')
     .eq(mid)
+    .filter('type')
+    .in(['MAP', 'USER-MAP'])
     .exec();
 
   // DB에 mid에 해당하는 지도가 없음
