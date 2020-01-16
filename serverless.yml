@@ -187,6 +187,15 @@ functions:
           path: /stories/{any+}
           method: ANY
           authorizer: authorize
+  # 푸시 관련 함수
+  Push:
+    handler: src/push.handler
+    tracing: true
+    events:
+      - http:
+          path: /push
+          method: ANY
+          authorizer: authorize
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details

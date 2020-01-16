@@ -44,30 +44,6 @@ const { paths, kakaoRequest, getDevice } = require('./modules/kakao');
 
 /* 유저 정보 가져오기 */
 router.get('/', async ctx => {
-  // 파라미터 가져오기
-  const pushToken = ctx.query.pushToken;
-  const deviceId = ctx.query.deviceId;
-
-  // pushToken 존재여부 확인
-  if (isUndefined(pushToken)) {
-    return createResponse(
-      ctx,
-      statusCode.requestError,
-      null,
-      'push token is required'
-    );
-  }
-
-  // deviceId 존재여부 확인
-  if (isUndefined(deviceId)) {
-    return createResponse(
-      ctx,
-      statusCode.requestError,
-      null,
-      'device id is required'
-    );
-  }
-
   // 카카오톡 유저정보 가져오기
   const result = await kakaoRequest(ctx, paths.getInfo);
 
@@ -102,23 +78,6 @@ router.get('/', async ctx => {
       userDB.update(userData);
       await Data.update(userDB.json());
     }
-  }
-
-  // pushToken 등록
-  const pushType = getDevice(ctx);
-
-  if (pushType != null) {
-    await kakaoRequest(
-      ctx,
-      paths.registerPushToken,
-      {
-        uuid: uid,
-        device_id: deviceId,
-        push_type: pushType,
-        push_token: pushToken,
-      },
-      true
-    );
   }
 
   createResponse(ctx, statusCode.success, userData);

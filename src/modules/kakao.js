@@ -5,7 +5,7 @@ const request = require('request');
 const request_promise = require('request-promise-native');
 
 const Options = {
-  uri: 'https://kapi.kakao.com/',
+  uri: 'https://kapi.kakao.com',
   headers: {
     'Content-Type': 'application/x-www-form-urlencoded;charset=utf-8',
   },
@@ -15,10 +15,16 @@ const getAuth = ctx => ctx.request.header.authorization;
 
 const adminKey = `KakaoAK ${process.env.KAKAO_ADMIN_KEY}`;
 
+/**
+ * [0]: Method 종류
+ * [1]: URL
+ * [2]: AdminKey 사용 여부
+ */
 exports.paths = Object.freeze({
-  verify: ['GET', 'v1/user/access_token_info'],
-  getInfo: ['GET', 'v2/user/me'],
-  registerPushToken: ['POST', 'v1/push/register'],
+  verify: ['GET', '/v1/user/access_token_info', false],
+  getInfo: ['GET', '/v2/user/me', false],
+  registerPushToken: ['POST', '/v1/push/register', true],
+  deregisterPushToken: ['POST', '/v1/push/deregister', true],
 });
 
 exports.request = request;
@@ -50,10 +56,10 @@ exports.getOptions = (path, auth) => {
   return options;
 };
 
-exports.kakaoRequest = async (ctx, path, form = {}, admin = false) => {
+exports.kakaoRequest = async (ctx, path, form = {}) => {
   let options = null;
 
-  if (admin) options = this.getOptions(path, adminKey);
+  if (path[2]) options = this.getOptions(path, adminKey);
   else options = this.getOptions(path, getAuth(ctx));
 
   options.form = form;
