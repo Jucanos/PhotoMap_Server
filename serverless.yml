@@ -206,6 +206,14 @@ functions:
           path: /push
           method: ANY
           authorizer: authorize
+  # 푸시 관련 함수
+  Notice:
+    handler: src/notice.handler
+    tracing: true
+    events:
+      - http:
+          path: /notice
+          method: ANY
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details

@@ -30,3 +30,17 @@ Resources:
           ProvisionedThroughput:
             ReadCapacityUnits: ${self:custom.dynamodb.tableThroughput}
             WriteCapacityUnits: ${self:custom.dynamodb.tableThroughput}
+  noticeTable:
+    Type: AWS::DynamoDB::Table
+    Properties:
+      TableName: noticeTable
+      AttributeDefinitions:
+        - AttributeName: id
+          AttributeType: S
+      KeySchema:
+        - AttributeName: PK
+          KeyType: HASH
+      # Set the capacity based on the stage
+      ProvisionedThroughput:
+        ReadCapacityUnits: 3
+        WriteCapacityUnits: 3
