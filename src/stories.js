@@ -159,6 +159,8 @@ router.get('/:id', async ctx => {
   // sid로 스토리 가져오기
   const story = await Data.queryOne('PK')
     .eq(sid)
+    .filter('type')
+    .beginsWith('STORY')
     .exec();
 
   // 스토리가 없다면 오류
@@ -182,6 +184,8 @@ router.patch('/:id', bodyParser(), async ctx => {
   // 스토리 가져오기
   const story = await Data.queryOne('PK')
     .eq(sid)
+    .filter('type')
+    .beginsWith('STORY')
     .exec();
 
   // 스토리가 존재하지 않으면 오류처리
@@ -216,6 +220,8 @@ router.delete('/:id', async ctx => {
   // sid에 해당하는 story 확인
   const story = await Data.queryOne('PK')
     .eq(sid)
+    .filter('type')
+    .beginsWith('STORY')
     .exec();
 
   // DB에 sid에 해당하는 스토리가 없음
