@@ -55,19 +55,25 @@ router.get('/', async ctx => {
   let mapData = [];
   for (let i = 0; i < maps.count; i++) {
     const relation = DClass.parseClass(maps[i]);
-    mapData.push(relation.mid);
+    mapData.push({
+      mid: relation.mid,
+      name: relation.name,
+    });
   }
 
   createResponse(ctx, statusCode.success, mapData);
 });
 
 /* 새로운 지도 생성 */
-router.post('/', async ctx => {
+router.post('/', bodyParser(), async ctx => {
   // JWT에서 uid 가져오기
   const uid = getUid(ctx);
 
+  // 파라미터 가져오기
+  const name = ctx.request.body.name || '새 지도';
+
   // 새로운 지도 생성
-  const mapData = new DClass.Map();
+  const mapData = new DClass.Map({ name });
   const newMap = new Data(mapData.json());
   await newMap.save();
 
@@ -75,6 +81,7 @@ router.post('/', async ctx => {
   const userMapData = new DClass.UserMap({
     mid: mapData.mid,
     uid,
+    name,
   });
 
   const newUserMap = new Data(userMapData.json());
@@ -85,7 +92,7 @@ router.post('/', async ctx => {
 
 /**
  * Route: /maps/{mid}
- * Method: get, patch, delete
+ * Method: get, put, patch, delete
  */
 
 /* 특정 지도 정보 가져오기 */
@@ -116,6 +123,49 @@ router.get('/:id', async ctx => {
   // console.log(contents);
 
   createResponse(ctx, statusCode.success, data);
+});
+
+/* 유저-지도의 이름 수정 */
+router.put('/:id', bodyParser(), async ctx => {
+  // JWT에서 uid 가져오기
+  const uid = getUid(ctx);
+
+  // 파라미터 가져오기
+  const mid = ctx.params.id;
+  const name = ctx.request.body.name;
+
+  if (isUndefined(name)) {
+    return createResponse(
+      ctx,
+      statusCode.requestError,
+      null,
+      'name is required'
+    );
+  }
+
+  // 유저-지도를 가져온다
+  const userMap = await Data.queryOne('SK')
+    .using('GSI')
+    .eq(uid)
+    .where('PK')
+    .eq(mid)
+    .exec();
+
+  if (isUndefined(userMap)) {
+    return createResponse(
+      ctx,
+      statusCode.failure,
+      null,
+      'userMap is not exist'
+    );
+  }
+
+  // 이름을 수정한다
+  let userMapData = DClass.parseClass(userMap);
+  userMapData.update({ name });
+  await Data.update(userMapData.json());
+
+  createResponse(ctx, statusCode.processingSuccess, null);
 });
 
 /* 지도에 사용자 추가/삭제 */

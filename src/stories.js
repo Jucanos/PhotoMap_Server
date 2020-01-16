@@ -4,7 +4,6 @@ require('dotenv').config();
 // Serverless http
 const serverless = require('serverless-http');
 const Koa = require('koa');
-const KoaBody = require('koa-body');
 const bodyParser = require('koa-bodyparser');
 const Router = require('@koa/router');
 
