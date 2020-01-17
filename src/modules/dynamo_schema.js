@@ -42,11 +42,38 @@ const DataSchema = new Schema(
   }
 );
 
+// Notice Schema
+const NoticeSchema = new Schema(
+  {
+    // 번호
+    id: {
+      type: String,
+      hashKey: true,
+    },
+    // 제목
+    title: {
+      type: String,
+      required: true,
+    },
+    // 내용
+    context: {
+      type: String,
+      required: true,
+    },
+  },
+  {
+    timestamps: true,
+  }
+);
+
 exports.tableName = process.env.DYNAMODB_TABLE;
-
-
 
 exports.Data = dynamoose.model(this.tableName, DataSchema, {
   update: true,
   tableName: this.tableName,
+});
+
+exports.Notice = dynamoose.model(process.env.DYNAMODB_NOTICE, NoticeSchema, {
+  update: true,
+  tableName: process.env.DYNAMODB_NOTICE,
 });

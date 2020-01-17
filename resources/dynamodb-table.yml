@@ -38,7 +38,7 @@ Resources:
         - AttributeName: id
           AttributeType: S
       KeySchema:
-        - AttributeName: PK
+        - AttributeName: id
           KeyType: HASH
       # Set the capacity based on the stage
       ProvisionedThroughput:

@@ -19,17 +19,10 @@ const awsXRay = require('aws-xray-sdk');
 const awsSdk = awsXRay.captureAWS(require('aws-sdk'));
 
 // Dynamoose 설정
-const Dynamoose = require('./modules/dynamo_schema');
-const Data = Dynamoose.Data;
+const { Notice } = require('./modules/dynamo_schema');
 
-// DClass와 util 가져오기
-const DClass = require('./modules/dynamo_class');
-const {
-  statusCode,
-  createResponse,
-  isUndefined,
-  getUid,
-} = require('./modules/util');
+// util 가져오기
+const { uuid, statusCode, createResponse } = require('./modules/util');
 
 /**
  * Route: /notice
@@ -38,7 +31,18 @@ const {
 
 /* 공지사항 가져오기 */
 router.get('/', async ctx => {
-  createResponse(ctx, statusCode.success, 'notice get');
+  // 공지사항 가져오기
+  const notices = await Notice.scan().exec();
+
+  console.log(notices);
+
+  // 반환값 뽑아내기
+  let data = [];
+  for (let i = 0; i < notices.count; i++) {
+    data.push(notices[i].originalItem());
+  }
+
+  createResponse(ctx, statusCode.success, data);
 });
 
 // Lambda로 내보내기
