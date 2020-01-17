@@ -7,9 +7,6 @@ dynamoose.AWS.config.update({
 });
 if (process.env.IS_OFFLINE) dynamoose.local();
 
-// uuid 가져오기
-const { uuid } = require('./util');
-
 // Data Schema
 const DataSchema = new Schema(
   {
@@ -47,9 +44,7 @@ const DataSchema = new Schema(
 
 exports.tableName = process.env.DYNAMODB_TABLE;
 
-exports.uuid = uuid;
 
-exports.dynamoose = dynamoose;
 
 exports.Data = dynamoose.model(this.tableName, DataSchema, {
   update: true,
