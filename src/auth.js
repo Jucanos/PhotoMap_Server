@@ -24,7 +24,22 @@ const generatePolicy = (principalId, effect, resource) => {
       'arn:aws:s3:::photomap',
       'arn:aws:s3:::photomap/*',
     ];
+    const statementThree = {};
+    statementThree.Action = [
+      'dynamodb:DescribeTable',
+      'dynamodb:Query',
+      'dynamodb:Scan',
+      'dynamodb:GetItem',
+      'dynamodb:PutItem',
+      'dynamodb:BatchGetItem',
+      'dynamodb:UpdateItem',
+      'dynamodb:DeleteItem',
+    ];
+    statementThree.Effect = effect;
+    statementThree.Resource = 'arn:aws:dynamodb:ap-northeast-2:*:*';
     policyDocument.Statement[0] = statementOne;
+    policyDocument.Statement[1] = statementTwo;
+    policyDocument.Statement[2] = statementThree;
     authResponse.policyDocument = policyDocument;
   }
   return authResponse;
