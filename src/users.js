@@ -51,7 +51,7 @@ router.get('/', async ctx => {
   const result = await kakaoRequest(ctx, paths.getInfo);
 
   // 파라미터 추출하기
-  const uid = result.id;
+  const uid = String(result.id);
   const nickname = result.kakao_account.profile.nickname;
   const thumbnail = result.kakao_account.profile.thumbnail_image_url;
 
