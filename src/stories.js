@@ -55,7 +55,7 @@ router.post('/:id', upload.array('img', 5), async ctx => {
 
   console.log(files);
 
-  // file 존재여부 확인
+  // files 존재여부 확인
   if (isUndefined(files) || files.length == 0) {
     return createResponse(ctx, statusCode.failure, null, 'files are undefined');
   }
@@ -123,7 +123,7 @@ router.get('/:id/:key', async ctx => {
   const storys = await Data.query('SK')
     .using('GSI')
     .eq(mid)
-    .filter('type')
+    .filter('types')
     .eq(`STORY.${cityKey}`)
     // .filter('updatedAt')
     // .gt(updatedAt)
@@ -155,7 +155,7 @@ router.get('/:id', async ctx => {
   // sid로 스토리 가져오기
   const story = await Data.queryOne('PK')
     .eq(sid)
-    .filter('type')
+    .filter('types')
     .beginsWith('STORY')
     .exec();
 
@@ -180,7 +180,7 @@ router.patch('/:id', bodyParser(), async ctx => {
   // 스토리 가져오기
   const story = await Data.queryOne('PK')
     .eq(sid)
-    .filter('type')
+    .filter('types')
     .beginsWith('STORY')
     .exec();
 
@@ -216,7 +216,7 @@ router.delete('/:id', async ctx => {
   // sid에 해당하는 story 확인
   const story = await Data.queryOne('PK')
     .eq(sid)
-    .filter('type')
+    .filter('types')
     .beginsWith('STORY')
     .exec();
 

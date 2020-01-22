@@ -53,7 +53,7 @@ router.get('/', async ctx => {
   const maps = await Data.query('SK')
     .using('GSI')
     .eq(uid)
-    .filter('type')
+    .filter('types')
     .eq('USER-MAP')
     .exec();
 
@@ -112,7 +112,7 @@ router.get('/:id', async ctx => {
   // 지도 정보 가져오기
   const maps = await Data.query('PK')
     .eq(mid)
-    .filter('type')
+    .filter('types')
     .in(['MAP', 'USER-MAP'])
     .exec();
 
@@ -124,7 +124,7 @@ router.get('/:id', async ctx => {
   let data = null;
   let userList = [];
   for (let i = 0; i < maps.count; i++) {
-    if (maps[i].type == 'MAP') {
+    if (maps[i].types == 'MAP') {
       data = DClass.parseClass(maps[i]);
     } else {
       userList.push({
@@ -274,7 +274,7 @@ router.patch('/:id', bodyParser(), async ctx => {
   // 지도 정보 가져오기
   const maps = await Data.queryOne('PK')
     .eq(mid)
-    .filter('type')
+    .filter('types')
     .eq('MAP')
     .exec();
 
@@ -339,7 +339,7 @@ router.delete('/:id', async ctx => {
   // mid에 해당하는 map의 count
   const maps = await Data.query('PK')
     .eq(mid)
-    .filter('type')
+    .filter('types')
     .in(['MAP', 'USER-MAP'])
     .exec();
 

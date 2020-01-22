@@ -3,12 +3,12 @@ const { representsDefault, isUndefined, uuid } = require('./util');
 exports.parseClass = function(doc) {
   doc = doc.originalItem();
 
-  const type = doc.type.split('.');
-  delete doc.type;
+  const types = doc.types.split('.');
+  delete doc.types;
 
   let obj;
 
-  switch (type[0]) {
+  switch (types[0]) {
     case 'USER':
       obj = new this.User(doc);
       break;
@@ -19,7 +19,7 @@ exports.parseClass = function(doc) {
       obj = new this.UserMap(doc);
       break;
     case 'STORY':
-      doc.cityKey = type[1];
+      doc.cityKey = types[1];
       obj = new this.Story(doc);
       break;
     case 'LOG':
@@ -62,7 +62,7 @@ exports.User = class User extends Data {
     return {
       PK: this.uid,
       SK: 'INFO',
-      type: 'USER',
+      types: 'USER',
       content: {
         nickname: this.nickname,
         thumbnail: this.thumbnail,
@@ -107,7 +107,7 @@ exports.Map = class Map extends Data {
     return {
       PK: this.mid,
       SK: 'INFO',
-      type: 'MAP',
+      types: 'MAP',
       content: {
         represents: this.represents,
         name: this.name,
@@ -136,7 +136,7 @@ exports.UserMap = class UserMap extends Data {
     return {
       PK: this.mid,
       SK: this.uid,
-      type: 'USER-MAP',
+      types: 'USER-MAP',
       content: {
         name: this.name,
       },
@@ -165,7 +165,7 @@ exports.Story = class Story extends Data {
     return {
       PK: this.sid,
       SK: this.mid,
-      type: `STORY.${this.cityKey}`,
+      types: `STORY.${this.cityKey}`,
       content: {
         title: this.title,
         context: this.context,
@@ -195,7 +195,7 @@ exports.Log = class Log extends Data {
     return {
       PK: this.lid,
       SK: this.mid,
-      type: 'LOG',
+      types: 'LOG',
       content: {
         uid: this.uid,
         data: this.data,
