@@ -52,7 +52,7 @@ router.get('/:id', async ctx => {
   const logs = await Data.query('SK')
     .using('GSI')
     .eq(mid)
-    .filter('types')
+    .where('types')
     .eq('LOG')
     .descending()
     .limit(100)

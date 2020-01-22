@@ -8,6 +8,8 @@ Resources:
           AttributeType: S
         - AttributeName: SK
           AttributeType: S
+        - AttributeName: types
+          AttributeType: S
       KeySchema:
         - AttributeName: PK
           KeyType: HASH
@@ -23,7 +25,7 @@ Resources:
           KeySchema:
             - AttributeName: SK
               KeyType: HASH
-            - AttributeName: PK
+            - AttributeName: types
               KeyType: RANGE
           Projection:
             ProjectionType: ALL

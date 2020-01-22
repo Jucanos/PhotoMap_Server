@@ -65,6 +65,8 @@ router.get('/', async ctx => {
   // uid에 해당하는 user의 count
   const user = await Data.queryOne('PK')
     .eq(uid)
+    .where('SK')
+    .eq('INFO')
     .filter('types')
     .eq('USER')
     .exec();
@@ -109,7 +111,7 @@ router.delete('/', async ctx => {
   const maps = await Data.query('SK')
     .using('GSI')
     .eq(uid)
-    .filter('types')
+    .where('types')
     .eq('USER-MAP')
     .exec();
 

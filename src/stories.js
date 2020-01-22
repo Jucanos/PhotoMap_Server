@@ -88,6 +88,8 @@ router.post('/:id', upload.array('img', 5), async ctx => {
     .eq(mid)
     .where('SK')
     .eq('INFO')
+    .filter('types')
+    .eq('MAP')
     .exec();
 
   if (isUndefined(map)) {
@@ -138,7 +140,7 @@ router.get('/:id/:key', async ctx => {
   const storys = await Data.query('SK')
     .using('GSI')
     .eq(mid)
-    .filter('types')
+    .where('types')
     .eq(`STORY.${cityKey}`)
     // .filter('updatedAt')
     // .gt(updatedAt)
@@ -253,6 +255,8 @@ router.delete('/:id', async ctx => {
     .eq(storyData.mid)
     .where('SK')
     .eq(uid)
+    .filter('types')
+    .eq('USER-MAP')
     .exec();
 
   // 소유자가 아니면 삭제 불가

@@ -53,7 +53,7 @@ router.get('/', async ctx => {
   const maps = await Data.query('SK')
     .using('GSI')
     .eq(uid)
-    .filter('types')
+    .where('types')
     .eq('USER-MAP')
     .exec();
 
@@ -195,6 +195,8 @@ router.post('/:id', upload.single('img'), async ctx => {
     .eq(mid)
     .where('SK')
     .eq('INFO')
+    .filter('types')
+    .eq('MAP')
     .exec();
 
   // 지도가 존재하는지 확인
@@ -238,11 +240,12 @@ router.put('/:id', bodyParser(), async ctx => {
   }
 
   // 유저-지도를 가져온다
-  const userMap = await Data.queryOne('SK')
-    .using('GSI')
-    .eq(uid)
-    .where('PK')
+  const userMap = await Data.queryOne('PK')
     .eq(mid)
+    .where('SK')
+    .eq(uid)
+    .filter('types')
+    .eq('USER-MAP')
     .exec();
 
   if (isUndefined(userMap)) {
@@ -274,6 +277,8 @@ router.patch('/:id', bodyParser(), async ctx => {
   // 지도 정보 가져오기
   const maps = await Data.queryOne('PK')
     .eq(mid)
+    .where('SK')
+    .eq('INFO')
     .filter('types')
     .eq('MAP')
     .exec();
