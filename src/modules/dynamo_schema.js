@@ -31,7 +31,7 @@ const DataSchema = new Schema(
       },
     },
     // identifier
-    type: {
+    types: {
       type: String,
       required: true,
     },
