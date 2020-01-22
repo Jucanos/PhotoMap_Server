@@ -83,6 +83,21 @@ router.post('/:id', upload.array('img', 5), async ctx => {
     return createResponse(ctx, statusCode.failure, null, 'cityKey is invalid');
   }
 
+  // map이 존재하는지 확인
+  const map = await Data.queryOne('PK')
+    .eq(mid)
+    .where('SK')
+    .eq('INFO')
+    .exec();
+
+  if (isUndefined(map)) {
+    for (const i in files) {
+      deleteObject(files[i].key);
+    }
+
+    return createResponse(ctx, statusCode.failure, null, 'map is not exist');
+  }
+
   // Story 객체 생성
   let storyData = new DClass.Story({
     mid,
