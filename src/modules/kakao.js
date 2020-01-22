@@ -43,8 +43,7 @@ exports.getDeviceType = ctx => {
     return 'gcm';
   }
 
-  // TODO: IOS에 맞는 agent타입으로 변경해야함
-  if (user.includes('ios')) {
+  if (user.includes('CFNetwork')) {
     return 'apns';
   }
 };
