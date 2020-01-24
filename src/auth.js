@@ -76,10 +76,7 @@ module.exports.verify = (event, context, callback) => {
         return callback('Unauthorized');
       }
 
-      return callback(
-        null,
-        generatePolicy(decoded.id, 'Allow', event.methodArn)
-      );
+      return callback(null, generatePolicy(decoded.id, 'Allow', '*'));
     });
   } catch (err) {
     console.log('catch error. Invalid token', err);

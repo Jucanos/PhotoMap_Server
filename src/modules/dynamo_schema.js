@@ -25,7 +25,7 @@ const DataSchema = new Schema(
       default: 'INFO',
       index: {
         global: true,
-        rangeKey: 'PK',
+        rangeKey: 'types',
         name: 'GSI',
         project: true,
       },

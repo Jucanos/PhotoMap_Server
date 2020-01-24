@@ -146,14 +146,6 @@ functions:
   authorize:
     handler: src/auth.verify
     tracing: true
-  refresh:
-    handler: src/auth.refresh
-    tracing: true
-    events:
-      - http:
-          path: /refresh
-          method: get
-          authorizer: authorize
   # 유저 관련 함수
   User:
     handler: src/users.handler
