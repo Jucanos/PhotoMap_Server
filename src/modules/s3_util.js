@@ -41,17 +41,14 @@ exports.upload = multer({
   },
 });
 
-exports.putObject = async (ctx, tag) => {
-  const mid = ctx.req.url.split('/')[2];
-  const file = ctx.request.files[tag];
-  const now = Date.now().toString();
-  const buffer = Buffer.from(file.path, 'base64');
-
+exports.putObject = async (mid, buffer) => {
   const params = {
     Body: buffer,
     Bucket: process.env.S3_BUCKET_NAME,
-    Key: `uploads/${mid}/${now}${file.name}`,
+    ACL: 'public-read',
+    Key: `uploads/${mid}/main.png`,
     Tagging: 'fieldName=image',
+    CacheControl: 'max-age=0',
   };
   await s3.putObject(params).promise();
 };
