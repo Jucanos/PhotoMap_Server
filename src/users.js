@@ -40,6 +40,9 @@ const { paths, kakaoRequest, getDeviceType } = require('./modules/kakao');
 // Logger 가져오기
 const Logger = require('./modules/logger');
 
+// Canvas 가져오기
+const { makeThumbnail } = require('./modules/canvas');
+
 /**
  * Route: /users
  * Method: get, delete
@@ -143,6 +146,16 @@ router.delete('/', async ctx => {
       }
     } else {
       deleteQueue.push(maps[i]);
+
+      // 섬네일 제작
+      for (let i = 0; i < deleteMap.length; i++) {
+        if (deleteMap[i].types == 'MAP' || deleteMap[i].SK == uid) {
+          deleteMap.splice(i, 1);
+          i--;
+          continue;
+        }
+      }
+      await makeThumbnail(maps[i].PK, deleteMap);
 
       // 로그
       Logger(ctx, maps[i].PK);
