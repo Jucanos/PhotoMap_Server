@@ -331,6 +331,15 @@ router.patch('/:id', bodyParser(), async ctx => {
     else {
       await newUserMap.save();
     }
+
+    // 섬네일 제작
+    for (const i in maps) {
+      if (maps[i].types == 'MAP') {
+        maps.splice(i, 1);
+        break;
+      }
+    }
+    await makeThumbnail(mid, maps);
   }
 
   // 로그
