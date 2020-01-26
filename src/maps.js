@@ -39,6 +39,9 @@ const {
 // Logger 가져오기
 const Logger = require('./modules/logger');
 
+// Canvas 가져오기
+const { makeThumbnail } = require('./modules/canvas');
+
 /**
  * Route: /maps
  * Method: get, post
@@ -92,6 +95,9 @@ router.post('/', bodyParser(), async ctx => {
 
   const newUserMap = new Data(userMapData.json());
   await newUserMap.save();
+
+  // 섬네일 제작
+  await makeThumbnail(mapData.mid, [newUserMap]);
 
   // 로그
   Logger(ctx, mapData.mid);
