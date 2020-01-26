@@ -278,16 +278,16 @@ router.patch('/:id', bodyParser(), async ctx => {
 
   // 파라미터 가져오기
   const mid = ctx.params.id;
-  const remove = ctx.request.body.remove || false;
+  const remove = ctx.request.body.remove || 'false';
 
-  // 지도 정보 가져오기
-  const maps = await Data.queryOne('PK')
+  // 지도 정보와 소유자 정보 가져오기
+  const maps = await Data.query('PK')
     .eq(mid)
-    .where('SK')
-    .eq('INFO')
     .filter('types')
-    .eq('MAP')
+    .in(['MAP', 'USER-MAP'])
     .exec();
+
+  console.log(maps);
 
   if (isUndefined(maps)) {
     return createResponse(ctx, statusCode.failure, null, 'map is not exist');
@@ -301,7 +301,7 @@ router.patch('/:id', bodyParser(), async ctx => {
   const newUserMap = new Data(userMapData.json());
 
   // 소유자 삭제 & 지도의 유지자가 없는경우 지도도 삭제
-  if (maps.count <= 2 && remove) {
+  if (maps.count <= 2 && remove == 'true') {
     let deleteQueue = [];
     for (let i = 0; i < maps.count; i++) {
       deleteQueue.push(maps[i]);
@@ -324,7 +324,7 @@ router.patch('/:id', bodyParser(), async ctx => {
     await Promise.all(deleteQueue.map(q => q.delete()));
   } else {
     // 사용자 삭제
-    if (remove) {
+    if (remove == 'true') {
       await newUserMap.delete();
     }
     //사용자 추가
