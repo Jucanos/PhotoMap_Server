@@ -20,6 +20,16 @@ jobs:
             ${{ runner.OS }}-build-
             ${{ runner.OS }}-
       - run: npm install
+      - name: save .env
+        run: |
+          echo STAGE=dev >> .env
+          echo DYNAMODB_REGION=ap-northeast-2 >> .env
+          echo DYNAMODB_TABLE=${{ secrets.DEV_DYNAMODB_TABLE }} >> .env
+          echo S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }} >> .env
+          echo S3_CUSTOM_DOMAIN=${{ secrets.S3_CUSTOM_DOMAIN }} >> .env
+          echo BASE_PATH=${{ secrets.DEV_BASE_PATH }} >> .env
+          echo KAKAO_APP_ID=${{ secrets.KAKAO_APP_ID }} >> .env
+          echo KAKAO_ADMIN_KEY=${{ secrets.KAKAO_ADMIN_KEY }} >> .env
       - name: serverless deploy
         uses: serverless/github-action@master
         with:
@@ -31,9 +41,8 @@ jobs:
           ENV: dev
           DYNAMODB_REGION: ap-northeast-2
           DYNAMODB_TABLE: ${{ secrets.DEV_DYNAMODB_TABLE }}
-          JWT_SECRET: ${{ secrets.JWT_SECRET }}
-          JWT_EXPIRATION_TIME: ${{ secrets.DEV_JWT_EXPIRATION_TIME }}
           S3_BUCKET_NAME: ${{ secrets.S3_BUCKET_NAME }}
           S3_CUSTOM_DOMAIN: ${{ secrets.S3_CUSTOM_DOMAIN }}
           BASE_PATH: ${{ secrets.DEV_BASE_PATH }}
-          AWS_XRAY_CONTEXT_MISSING: LOG_ERROR
+          KAKAO_APP_ID: ${{ secrets.KAKAO_APP_ID }}
+          KAKAO_ADMIN_KEY: ${{ secrets.KAKAO_ADMIN_KEY }}
