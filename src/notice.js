@@ -4,7 +4,6 @@ require('dotenv').config();
 // Serverless http
 const serverless = require('serverless-http');
 const Koa = require('koa');
-const bodyParser = require('koa-bodyparser');
 const Router = require('@koa/router');
 
 // Koa 설정
@@ -44,21 +43,6 @@ router.get('/', async ctx => {
   }
 
   createResponse(ctx, statusCode.success, data);
-});
-
-/* (테스트용) 공지사항 만들기 */
-router.post('/', bodyParser(), async ctx => {
-  // 파라미터 가져오기
-  const title = ctx.request.body.title || '제목';
-  const context = ctx.request.body.context || '내용';
-
-  await Notice.create({
-    id: uuid(),
-    title,
-    context,
-  });
-
-  createResponse(ctx, statusCode.processingSuccess, null);
 });
 
 // Lambda로 내보내기
