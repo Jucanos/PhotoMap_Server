@@ -43,6 +43,7 @@
     "@koa/multer": "^2.0.2",
     "@koa/router": "^8.0.6",
     "aws-xray-sdk": "^2.5.0",
+    "canvas": "^2.6.1",
     "dotenv": "^8.2.0",
     "dynamoose": "^1.11.1",
     "koa": "^2.11.0",
