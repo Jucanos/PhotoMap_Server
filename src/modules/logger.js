@@ -4,7 +4,7 @@ const Data = Dynamoose.Data;
 
 // DClass와 util 가져오기
 const DClass = require('./dynamo_class');
-const { statusCode, createResponse, isUndefined, getUid } = require('./util');
+const { getUid } = require('./util');
 
 const cityString = {
   gyeonggi: '경기도',

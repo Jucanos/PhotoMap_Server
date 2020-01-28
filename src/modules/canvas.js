@@ -7,16 +7,6 @@ const ctx = canvas.getContext('2d');
 const Dynamoose = require('./dynamo_schema');
 const Data = Dynamoose.Data;
 
-// DClass와 util 가져오기
-const DClass = require('./dynamo_class');
-const {
-  statusCode,
-  createResponse,
-  isUndefined,
-  representsDefault,
-  getUid,
-} = require('./util');
-
 // s3 가져오기
 const { putObject } = require('./s3_util');
 

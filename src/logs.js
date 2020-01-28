@@ -23,12 +23,7 @@ const { Data } = require('./modules/dynamo_schema');
 
 // DClass와 util 가져오기
 const DClass = require('./modules/dynamo_class');
-const {
-  statusCode,
-  createResponse,
-  isUndefined,
-  getUid,
-} = require('./modules/util');
+const { statusCode, createResponse, getUid } = require('./modules/util');
 
 // Request 가져오기
 const { paths, kakaoRequest, getDeviceType } = require('./modules/kakao');

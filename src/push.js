@@ -19,11 +19,7 @@ app.use(router.allowedMethods());
 const awsXRay = require('aws-xray-sdk');
 const awsSdk = awsXRay.captureAWS(require('aws-sdk'));
 
-// Dynamoose 설정
-const { Data } = require('./modules/dynamo_schema');
-
-// DClass와 util 가져오기
-const DClass = require('./modules/dynamo_class');
+// util 가져오기
 const {
   statusCode,
   createResponse,
