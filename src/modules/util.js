@@ -2,7 +2,7 @@
 require('dotenv').config();
 
 // uuid 가져오기
-const uuid4 = require('uuid4');
+const uuid4 = require('uuid/v4');
 
 exports.isUndefined = obj => {
   if (typeof obj === 'undefined' && !obj) {
