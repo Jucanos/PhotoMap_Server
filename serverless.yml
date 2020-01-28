@@ -31,6 +31,8 @@ custom:
     includeModules:
       forceInclude:
         - serverless-http
+      forceExclude:
+        - canvas
     packager: 'npm' # Packager that will be used to package your external modules
     excludeFiles: src/**/*.test.js # Provide a glob for files to ignore
   dynamodb:
@@ -122,7 +124,7 @@ provider:
 #  environment:
 #    variable1: value1
 package:
-  individually: ${self:custom.package_individually.${env:STAGE}, false}
+  individually: true
 
 # you can add packaging information here
 #package:
@@ -147,8 +149,16 @@ functions:
     handler: src/auth.verify
     tracing: true
   # 유저 관련 함수
-  User:
-    handler: src/users.handler
+  UserGet:
+    handler: src/userGet.handler
+    tracing: true
+    events:
+      - http:
+          path: /users
+          method: get
+          authorizer: authorize
+  UserDelete:
+    handler: src/userDelete.handler
     tracing: true
     layers:
       - arn:aws:lambda:ap-northeast-2:383760702031:layer:canvas-library-layer:1
@@ -156,11 +166,11 @@ functions:
     events:
       - http:
           path: /users
-          method: ANY
+          method: delete
           authorizer: authorize
   # 지도 관련 함수
-  Map:
-    handler: src/maps.handler
+  Map1:
+    handler: src/maps1.handler
     tracing: true
     layers:
       - arn:aws:lambda:ap-northeast-2:383760702031:layer:canvas-library-layer:1
@@ -170,6 +180,13 @@ functions:
           path: /maps
           method: ANY
           authorizer: authorize
+  Map2:
+    handler: src/maps2.handler
+    tracing: true
+    layers:
+      - arn:aws:lambda:ap-northeast-2:383760702031:layer:canvas-library-layer:1
+      - arn:aws:lambda:ap-northeast-2:383760702031:layer:node-canvas-layer:1
+    events:
       - http:
           path: /maps/{any+}
           method: ANY

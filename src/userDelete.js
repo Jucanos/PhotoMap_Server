@@ -13,12 +13,7 @@ const { Data } = require('./modules/dynamo_schema');
 
 // DClass와 util 가져오기
 const DClass = require('./modules/dynamo_class');
-const {
-  statusCode,
-  createResponse,
-  isUndefined,
-  getUid,
-} = require('./modules/util');
+const { statusCode, getUid } = require('./modules/util');
 
 // Request 가져오기
 const { paths, kakaoRequest, getDeviceType } = require('./modules/kakao');
@@ -33,68 +28,6 @@ const { makeThumbnail } = require('./modules/canvas');
  * Route: /users
  * Method: get, delete
  */
-
-/* 유저 정보 가져오기 */
-module.exports.userGet = async (ctx, context) => {
-  context.basePath = process.env.BASE_PATH;
-  context.callbackWaitsForEmptyEventLoop = false;
-
-  ctx.request = {
-    header: {
-      authorization: ctx.headers.Authorization,
-      'user-agent': ctx.headers['User-Agent'],
-    },
-  };
-
-  // 카카오톡 유저정보 가져오기
-  const result = await kakaoRequest(ctx, paths.getInfo);
-
-  // 파라미터 추출하기
-  const uid = String(result.id);
-  const nickname = result.kakao_account.profile.nickname;
-  const thumbnail = result.kakao_account.profile.thumbnail_image_url;
-
-  // 초기값 설정
-  let userData = new DClass.User({
-    uid,
-    nickname,
-    thumbnail,
-  });
-
-  // uid에 해당하는 user의 count
-  const user = await Data.queryOne('PK')
-    .eq(uid)
-    .where('SK')
-    .eq('INFO')
-    .filter('types')
-    .eq('USER')
-    .exec();
-
-  // user가 존재하지 않으면 회원등록
-  if (isUndefined(user)) {
-    const newUser = new Data(userData.json());
-    await newUser.save();
-  }
-  // user가 존재하면 회원정보 반환
-  else {
-    let userDB = DClass.parseClass(user);
-
-    // nickname과 thumbnail중 하나라도 다르면
-    if (!userData.equal(userDB)) {
-      userDB.update(userData);
-      await Data.update(userDB.json());
-    }
-  }
-
-  const response = {
-    data: userData,
-    message: null,
-  };
-  return {
-    statusCode: statusCode.success,
-    body: JSON.stringify(response),
-  };
-};
 
 /* 유저 삭제 */
 module.exports.userDelete = async (ctx, context) => {

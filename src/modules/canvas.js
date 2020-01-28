@@ -54,7 +54,7 @@ exports.makeThumbnail = async (mid, users) => {
     drawRoundedImage(images[2], 5, 100, 90, 90, 40);
     drawRoundedImage(images[3], 100, 100, 90, 90, 40);
   }
-  putObject(mid, canvas.toBuffer('image/png'));
+  await putObject(mid, canvas.toBuffer('image/png'));
 };
 
 const clearCanvas = () => {

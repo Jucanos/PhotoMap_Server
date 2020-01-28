@@ -42,69 +42,6 @@ const Logger = require('./modules/logger');
 const { makeThumbnail } = require('./modules/canvas');
 
 /**
- * Route: /maps
- * Method: get, post
- */
-
-/* 지도 리스트 가져오기 */
-router.get('/', async ctx => {
-  // JWT에서 uid 가져오기
-  const uid = getUid(ctx);
-
-  // uid에 해당하는 user의 count
-  const maps = await Data.query('SK')
-    .using('GSI')
-    .eq(uid)
-    .where('types')
-    .eq('USER-MAP')
-    .exec();
-
-  // 지도-유저에서 mid들을 뽑아서 넣는다.
-  let mapData = [];
-  for (let i = 0; i < maps.count; i++) {
-    const relation = DClass.parseClass(maps[i]);
-    mapData.push({
-      mid: relation.mid,
-      name: relation.name,
-    });
-  }
-
-  createResponse(ctx, statusCode.success, mapData);
-});
-
-/* 새로운 지도 생성 */
-router.post('/', bodyParser(), async ctx => {
-  // JWT에서 uid 가져오기
-  const uid = getUid(ctx);
-
-  // 파라미터 가져오기
-  const name = ctx.request.body.name || '새 지도';
-
-  // 새로운 지도 생성
-  const mapData = new DClass.Map({ name });
-  const newMap = new Data(mapData.json());
-  await newMap.save();
-
-  // 지도-유저 연결
-  const userMapData = new DClass.UserMap({
-    mid: mapData.mid,
-    uid,
-    name,
-  });
-
-  const newUserMap = new Data(userMapData.json());
-  await newUserMap.save();
-
-  // 섬네일 제작
-  await makeThumbnail(mapData.mid, [newUserMap]);
-
-  // 로그
-  Logger(ctx, mapData.mid);
-
-  createResponse(ctx, statusCode.success, mapData);
-});
-
-/**
  * Route: /maps/{mid}
  * Method: get, post, put, patch, delete
  */
