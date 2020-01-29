@@ -63,10 +63,10 @@ exports.kakaoRequest = async (ctx, path, form = {}) => {
     }
     options.uri += query;
   } else options.form = form;
-  console.log(options);
+  console.log('[kakaoRequest]', { options });
 
   const result = await request_promise(options);
-  console.log(result);
+  console.log('[kakaoRequest]', { result });
 
   return JSON.parse(result);
 };

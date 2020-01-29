@@ -59,6 +59,7 @@ router.get('/:id', async ctx => {
     .exec();
 
   if (maps.count == 0) {
+    console.error('map is not exist');
     return createResponse(ctx, statusCode.failure, null, 'map is not exist');
   }
 
@@ -106,11 +107,11 @@ router.post('/:id', upload.single('img'), async ctx => {
   const mid = ctx.params.id;
   const cityKey = ctx.request.body.cityKey;
   const file = ctx.file;
-
-  console.log(file);
+  console.log('[Parameter]', { mid, cityKey, file });
 
   // file 존재여부 확인
   if (isUndefined(file)) {
+    console.error('file is undefined');
     return createResponse(ctx, statusCode.failure, null, 'file is undefined');
   }
 
@@ -118,6 +119,7 @@ router.post('/:id', upload.single('img'), async ctx => {
   if (isUndefined(cityKey)) {
     deleteObject(file.key);
 
+    console.error('cityKey is undefined');
     return createResponse(
       ctx,
       statusCode.failure,
@@ -130,6 +132,7 @@ router.post('/:id', upload.single('img'), async ctx => {
   if (representsDefault.indexOf(cityKey) == -1) {
     deleteObject(file.key);
 
+    console.error('cityKey is invalid');
     return createResponse(ctx, statusCode.failure, null, 'cityKey is invalid');
   }
 
@@ -145,6 +148,7 @@ router.post('/:id', upload.single('img'), async ctx => {
   if (isUndefined(map)) {
     deleteObject(file.key);
 
+    console.error('map is not exist');
     return createResponse(ctx, statusCode.failure, null, 'map is not exist');
   }
 
@@ -171,8 +175,10 @@ router.put('/:id', bodyParser(), async ctx => {
   // 파라미터 가져오기
   const mid = ctx.params.id;
   const name = ctx.request.body.name;
+  console.log('[Parameter]', { mid, name });
 
   if (isUndefined(name)) {
+    console.error('name is required');
     return createResponse(
       ctx,
       statusCode.requestError,
@@ -191,6 +197,7 @@ router.put('/:id', bodyParser(), async ctx => {
     .exec();
 
   if (isUndefined(userMap)) {
+    console.error('userMap is not exist');
     return createResponse(
       ctx,
       statusCode.failure,
@@ -215,6 +222,7 @@ router.patch('/:id', bodyParser(), async ctx => {
   // 파라미터 가져오기
   const mid = ctx.params.id;
   const remove = ctx.request.body.remove || 'false';
+  console.log('[Parameter]', { mid, remove });
 
   // 지도 정보와 소유자 정보 가져오기
   const maps = await Data.query('PK')
@@ -223,9 +231,10 @@ router.patch('/:id', bodyParser(), async ctx => {
     .in(['MAP', 'USER-MAP'])
     .exec();
 
-  console.log(maps);
+  console.log({ maps });
 
   if (isUndefined(maps)) {
+    console.error('map is not exist');
     return createResponse(ctx, statusCode.failure, null, 'map is not exist');
   }
 
@@ -301,6 +310,7 @@ router.delete('/:id', async ctx => {
 
   // DB에 mid에 해당하는 지도가 없음
   if (maps.count == 0) {
+    console.error('this map is already deleted');
     return createResponse(
       ctx,
       statusCode.failure,
@@ -321,6 +331,7 @@ router.delete('/:id', async ctx => {
 
   // 소유자가 아니면 삭제 불가
   if (!isOwner) {
+    console.error('this map is not yours');
     return createResponse(
       ctx,
       statusCode.authorizationFailure,

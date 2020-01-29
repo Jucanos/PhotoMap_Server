@@ -34,7 +34,7 @@ router.get('/', async ctx => {
   // 공지사항 가져오기
   const notices = await Notice.scan().exec();
 
-  console.log(notices);
+  console.log({ notices });
 
   // 반환값 뽑아내기
   let data = [];

@@ -59,7 +59,7 @@ module.exports.verify = (event, context, callback) => {
   }
 
   const options = getOptions(paths.verify, event.authorizationToken);
-  console.log(options);
+  console.log({ options });
 
   try {
     request(options, (err, response, body) => {

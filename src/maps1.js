@@ -70,6 +70,7 @@ router.post('/', bodyParser(), async ctx => {
 
   // 파라미터 가져오기
   const name = ctx.request.body.name || '새 지도';
+  console.log('[Parameter]', { uid, name });
 
   // 새로운 지도 생성
   const mapData = new DClass.Map({ name });

@@ -51,11 +51,11 @@ router.post('/:id', upload.array('img', 5), async ctx => {
   const title = ctx.request.body.title || '';
   const context = ctx.request.body.context || '';
   const files = ctx.files;
-
-  console.log(files);
+  console.log('[Parameter]', { mid, cityKey, title, context, files });
 
   // files 존재여부 확인
   if (isUndefined(files) || files.length == 0) {
+    console.error('files are undefined');
     return createResponse(ctx, statusCode.failure, null, 'files are undefined');
   }
 
@@ -65,6 +65,7 @@ router.post('/:id', upload.array('img', 5), async ctx => {
       deleteObject(files[i].key);
     }
 
+    console.error('cityKey is undefined');
     return createResponse(
       ctx,
       statusCode.failure,
@@ -79,6 +80,7 @@ router.post('/:id', upload.array('img', 5), async ctx => {
       deleteObject(files[i].key);
     }
 
+    console.error('cityKey is invalid');
     return createResponse(ctx, statusCode.failure, null, 'cityKey is invalid');
   }
 
@@ -96,6 +98,7 @@ router.post('/:id', upload.array('img', 5), async ctx => {
       deleteObject(files[i].key);
     }
 
+    console.error('map is not exist');
     return createResponse(ctx, statusCode.failure, null, 'map is not exist');
   }
 
@@ -134,6 +137,7 @@ router.get('/:id/:key', async ctx => {
   const mid = ctx.params.id;
   const cityKey = ctx.params.key;
   // const updatedAt = ctx.query.updatedAt || 0;
+  console.log('[Parameter]', { mid, cityKey });
 
   // 스토리 가져오기
   const storys = await Data.query('SK')
@@ -177,6 +181,7 @@ router.get('/:id', async ctx => {
 
   // 스토리가 없다면 오류
   if (isUndefined(story)) {
+    console.error('Story is not exist');
     return createResponse(ctx, statusCode.failure, null, 'Story is not exist');
   }
 
@@ -192,6 +197,7 @@ router.patch('/:id', bodyParser(), async ctx => {
   const sid = ctx.params.id;
   const title = ctx.request.body.title || '';
   const context = ctx.request.body.context || '';
+  console.log('[Parameter]', { sid, title, context });
 
   // 스토리 가져오기
   const story = await Data.queryOne('PK')
@@ -202,6 +208,7 @@ router.patch('/:id', bodyParser(), async ctx => {
 
   // 스토리가 존재하지 않으면 오류처리
   if (isUndefined(story)) {
+    console.error('this story is not exist');
     return createResponse(
       ctx,
       statusCode.failure,
@@ -238,6 +245,7 @@ router.delete('/:id', async ctx => {
 
   // DB에 sid에 해당하는 스토리가 없음
   if (isUndefined(story)) {
+    console.error('this story is already deleted');
     return createResponse(
       ctx,
       statusCode.failure,
@@ -260,6 +268,7 @@ router.delete('/:id', async ctx => {
 
   // 소유자가 아니면 삭제 불가
   if (isUndefined(owner)) {
+    console.error('this story is not yours');
     return createResponse(
       ctx,
       statusCode.authorizationFailure,

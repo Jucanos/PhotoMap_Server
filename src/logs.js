@@ -23,10 +23,7 @@ const { Data } = require('./modules/dynamo_schema');
 
 // DClass와 util 가져오기
 const DClass = require('./modules/dynamo_class');
-const { statusCode, createResponse, getUid } = require('./modules/util');
-
-// Request 가져오기
-const { paths, kakaoRequest, getDeviceType } = require('./modules/kakao');
+const { statusCode, createResponse } = require('./modules/util');
 
 /**
  * Route: /logs
@@ -35,12 +32,10 @@ const { paths, kakaoRequest, getDeviceType } = require('./modules/kakao');
 
 /* 지도의 로그정보 가져오기 */
 router.get('/:id', async ctx => {
-  // JWT에서 uid 가져오기
-  const uid = getUid(ctx);
-
   // 파라미터 가져오기
   const mid = ctx.params.id;
   const createdAt = ctx.params.createdAt || '3000-01-01T01:00:00.000Z';
+  console.log('[Parameter]', { mid, createdAt });
 
   // 로그 가져오기
   const logs = await Data.query('SK')

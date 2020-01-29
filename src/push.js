@@ -43,9 +43,11 @@ router.post('/', bodyParser(), async ctx => {
   // 파라미터 가져오기
   const push_token = ctx.query.pushToken;
   const device_id = ctx.query.deviceId;
+  console.log('[Parameter]', { push_token, device_id });
 
   // pushToken 존재여부 확인
   if (isUndefined(push_token)) {
+    console.error('push token is required');
     return createResponse(
       ctx,
       statusCode.requestError,
@@ -56,6 +58,7 @@ router.post('/', bodyParser(), async ctx => {
 
   // deviceId 존재여부 확인
   if (isUndefined(device_id)) {
+    console.error('device id is required');
     return createResponse(
       ctx,
       statusCode.requestError,
@@ -86,9 +89,11 @@ router.delete('/', bodyParser(), async ctx => {
 
   // 파라미터 가져오기
   const device_id = ctx.query.deviceId;
+  console.log('[Parameter]', { device_id });
 
   // deviceId 존재여부 확인
   if (isUndefined(device_id)) {
+    console.error('device id is required');
     return createResponse(
       ctx,
       statusCode.requestError,

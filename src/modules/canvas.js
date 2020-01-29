@@ -13,7 +13,7 @@ const { putObject } = require('./s3_util');
 exports.makeThumbnail = async (mid, users) => {
   clearCanvas();
 
-  console.log(users);
+  console.log('[makeThumbnail]', { users });
 
   let userModels = [];
   for (let i = 0; i < users.length; i++) {
@@ -23,10 +23,10 @@ exports.makeThumbnail = async (mid, users) => {
       SK: 'INFO',
     });
   }
-  console.log(userModels);
+  console.log('[makeThumbnail]', { userModels });
 
   const userData = await Data.batchGet(userModels);
-  console.log(userData);
+  console.log('[makeThumbnail]', { userData });
 
   let images = [];
   for (const i in userData) {
@@ -34,7 +34,7 @@ exports.makeThumbnail = async (mid, users) => {
     const thumbnail = userData[i].content.thumbnail;
     images.push(await loadImage(thumbnail));
   }
-  console.log(images);
+  console.log('[makeThumbnail]', { images });
 
   if (images.length == 1) {
     // 1개

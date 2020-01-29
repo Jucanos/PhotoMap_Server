@@ -39,6 +39,7 @@ module.exports.handler = async (ctx, context) => {
   const uid = String(result.id);
   const nickname = result.kakao_account.profile.nickname;
   const thumbnail = result.kakao_account.profile.thumbnail_image_url;
+  console.log('[Parameter]', { uid, nickname, thumbnail });
 
   // 초기값 설정
   let userData = new DClass.User({
@@ -58,6 +59,7 @@ module.exports.handler = async (ctx, context) => {
 
   // user가 존재하지 않으면 회원등록
   if (isUndefined(user)) {
+    console.log('user is not exist and register');
     const newUser = new Data(userData.json());
     await newUser.save();
   }
@@ -67,6 +69,7 @@ module.exports.handler = async (ctx, context) => {
 
     // nickname과 thumbnail중 하나라도 다르면
     if (!userData.equal(userDB)) {
+      console.log('user data update');
       userDB.update(userData);
       await Data.update(userDB.json());
     }
