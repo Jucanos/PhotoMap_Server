@@ -167,6 +167,7 @@ exports.Story = class Story extends Data {
       SK: this.mid,
       types: `STORY.${this.cityKey}`,
       content: {
+        creator: this.creator,
         title: this.title,
         context: this.context,
         files: this.files,

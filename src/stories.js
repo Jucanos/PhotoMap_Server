@@ -45,6 +45,9 @@ const Logger = require('./modules/logger');
 
 /* 스토리 만들기 */
 router.post('/:id', upload.array('img', 5), async ctx => {
+  // JWT에서 uid 가져오기
+  const uid = getUid(ctx);
+
   // 파라미터 가져오기
   const mid = ctx.params.id;
   const cityKey = ctx.request.body.cityKey;
@@ -105,6 +108,7 @@ router.post('/:id', upload.array('img', 5), async ctx => {
   // Story 객체 생성
   let storyData = new DClass.Story({
     mid,
+    creator: uid,
     cityKey,
     title,
     context,

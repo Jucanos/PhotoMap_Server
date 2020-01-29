@@ -101,7 +101,7 @@ router.get('/:id', async ctx => {
   createResponse(ctx, statusCode.success, data);
 });
 
-/* 대표지도 설정하기 */
+/* 대표사진 설정하기 */
 router.post('/:id', upload.single('img'), async ctx => {
   // 파라미터 가져오기
   const mid = ctx.params.id;
@@ -238,13 +238,6 @@ router.patch('/:id', bodyParser(), async ctx => {
     return createResponse(ctx, statusCode.failure, null, 'map is not exist');
   }
 
-  // 지도-유저 생성
-  const userMapData = new DClass.UserMap({
-    mid,
-    uid,
-  });
-  const newUserMap = new Data(userMapData.json());
-
   // 소유자 삭제 & 지도의 유지자가 없는경우 지도도 삭제
   if (maps.count <= 2 && remove == 'true') {
     let deleteQueue = [];
@@ -268,6 +261,22 @@ router.patch('/:id', bodyParser(), async ctx => {
     // 삭제를 기다린다.
     await Promise.all(deleteQueue.map(q => q.delete()));
   } else {
+    let name = '새 지도';
+    for (let i = 0; i < maps.count; i++) {
+      if (maps[i].types == 'MAP') {
+        name = maps[i].content.name;
+      }
+    }
+    console.log({ name });
+
+    // 지도-유저 생성
+    const userMapData = new DClass.UserMap({
+      mid,
+      name,
+      uid,
+    });
+    const newUserMap = new Data(userMapData.json());
+
     // 사용자 삭제
     if (remove == 'true') {
       await newUserMap.delete();
