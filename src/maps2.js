@@ -233,7 +233,7 @@ router.patch('/:id', bodyParser(), async ctx => {
 
   console.log({ maps });
 
-  if (isUndefined(maps)) {
+  if (maps.count == 0) {
     console.error('map is not exist');
     return createResponse(ctx, statusCode.failure, null, 'map is not exist');
   }
@@ -265,6 +265,17 @@ router.patch('/:id', bodyParser(), async ctx => {
     for (let i = 0; i < maps.count; i++) {
       if (maps[i].types == 'MAP') {
         name = maps[i].content.name;
+      }
+      if (maps[i].types == 'USER-MAP' && remove == 'false') {
+        if (uid == maps[i].SK) {
+          console.error('you already enrolled in this map');
+          return createResponse(
+            ctx,
+            statusCode.failure,
+            null,
+            'you already enrolled in this map'
+          );
+        }
       }
     }
     console.log({ name });
