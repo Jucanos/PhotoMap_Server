@@ -30,6 +30,7 @@ exports.makeThumbnail = async (mid, users) => {
 
   let images = [];
   for (const i in userData) {
+    if (i == 4) break;
     const thumbnail = userData[i].content.thumbnail;
     images.push(await loadImage(thumbnail));
   }
