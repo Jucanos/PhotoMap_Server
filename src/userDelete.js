@@ -30,7 +30,7 @@ const { makeThumbnail } = require('./modules/canvas');
  */
 
 /* 유저 삭제 */
-module.exports.userDelete = async (ctx, context) => {
+module.exports.handler = async (ctx, context) => {
   context.basePath = process.env.BASE_PATH;
   context.callbackWaitsForEmptyEventLoop = false;
 
