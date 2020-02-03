@@ -44,5 +44,5 @@ Resources:
           KeyType: HASH
       # Set the capacity based on the stage
       ProvisionedThroughput:
-        ReadCapacityUnits: 3
-        WriteCapacityUnits: 3
+        ReadCapacityUnits: 2
+        WriteCapacityUnits: 2
