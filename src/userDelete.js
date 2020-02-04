@@ -39,6 +39,8 @@ module.exports.handler = async (ctx, context) => {
       authorization: ctx.headers.Authorization,
       'user-agent': ctx.headers['User-Agent'],
     },
+    url: ctx.path,
+    method: ctx.httpMethod,
   };
   ctx.req = {
     requestContext: ctx.requestContext,
