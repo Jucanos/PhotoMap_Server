@@ -164,6 +164,9 @@ router.post('/:id', upload.single('img'), async ctx => {
   mapData.represents[cityKey] = process.env.S3_CUSTOM_DOMAIN + file.key;
   await Data.update(mapData.json());
 
+  // 로그
+  Logger(ctx, mid, { cityKey });
+
   createResponse(ctx, statusCode.success, mapData.represents);
 });
 

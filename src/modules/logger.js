@@ -19,7 +19,8 @@ const cityString = {
 };
 
 module.exports = async (ctx, mid, story = null) => {
-  const url = ctx.request.url.split('/')[1];
+  const urlArray = ctx.request.url.split('/');
+  const url = urlArray[1];
   const method = ctx.request.method;
 
   const uid = getUid(ctx);
@@ -34,9 +35,14 @@ module.exports = async (ctx, mid, story = null) => {
   if (url == 'maps') {
     if (method == 'POST') {
       // POST
-      data = `${userData.nickname}님이 지도를 생성하셨습니다.`;
-    }
-    if (method == 'PATCH') {
+      if (urlArray.length == 2) {
+        data = `${userData.nickname}님이 지도를 생성하셨습니다.`;
+      } else if (urlArray.length == 3) {
+        data = `${userData.nickname}님이 ${
+          cityString[story.cityKey]
+        } 지역의 대표지도를 변경하셨습니다.`;
+      }
+    } else if (method == 'PATCH') {
       // PATCH
       const remove = ctx.request.body.remove;
       if (remove) {
@@ -80,10 +86,11 @@ module.exports = async (ctx, mid, story = null) => {
 
 /*
   로그 종류
-  유저가 삭제되어 모든 지도 나감 (users/delete)
-  유저가 지도 생성 (maps/post)
-  유저가 지도에 추가/나감 (maps/patch)
-  유저가 스토리 추가 (stories/post)
-  유저가 스토리 수정 (stories/patch)
-  유저가 스토리 삭제 (stories/delete)
+  유저가 삭제되어 모든 지도 나감 (users, delete)
+  유저가 지도 생성 (maps, post)
+  유저가 대표지도 변경 (maps/{mid}, post)
+  유저가 지도에 추가/나감 (maps/{mid}, patch)
+  유저가 스토리 추가 (stories/{sid}, post)
+  유저가 스토리 수정 (stories/{sid}, patch)
+  유저가 스토리 삭제 (stories/{sid}, delete)
 */
