@@ -42,7 +42,7 @@ router.get('/:id', async ctx => {
     .using('GSI')
     .eq(mid)
     .where('types')
-    .eq('LOG')
+    .beginsWith('LOG')
     .descending()
     .limit(100)
     .filter('createdAt')
@@ -54,6 +54,7 @@ router.get('/:id', async ctx => {
 
   for (let i = 0; i < logs.count; i++) {
     data.push(DClass.parseClass(logs[i]));
+    delete data[i].now;
   }
 
   createResponse(ctx, statusCode.success, data);

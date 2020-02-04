@@ -23,6 +23,7 @@ exports.parseClass = function(doc) {
       obj = new this.Story(doc);
       break;
     case 'LOG':
+      doc.now = types[1];
       obj = new this.Log(doc);
       break;
   }
@@ -184,11 +185,17 @@ exports.Log = class Log extends Data {
     if (!isUndefined(options.content)) {
       this.lid = options.PK;
       this.mid = options.SK;
+      this.now = options.now;
     }
 
     // lid 기본값
     if (isUndefined(this.sid)) {
       this.lid = uuid();
+    }
+
+    // lid 기본값
+    if (isUndefined(this.now)) {
+      this.now = Date.now();
     }
   }
 
@@ -196,7 +203,7 @@ exports.Log = class Log extends Data {
     return {
       PK: this.lid,
       SK: this.mid,
-      types: 'LOG',
+      types: `LOG.${this.now}`,
       content: {
         uid: this.uid,
         data: this.data,
