@@ -291,22 +291,32 @@ router.patch('/:id', bodyParser(), async ctx => {
     });
     const newUserMap = new Data(userMapData.json());
 
-    // 사용자 삭제
-    if (remove == 'true') {
-      await newUserMap.delete();
-    }
-    //사용자 추가
-    else {
-      await newUserMap.save();
-    }
-
-    // 섬네일 제작
+    // 섬네일용 정보 가공
     for (const i in maps) {
       if (maps[i].types == 'MAP') {
         maps.splice(i, 1);
         break;
       }
     }
+
+    // 사용자 삭제
+    if (remove == 'true') {
+      await newUserMap.delete();
+
+      for (const i in maps) {
+        if (maps[i].SK == uid) {
+          maps.splice(i, 1);
+          break;
+        }
+      }
+    }
+    //사용자 추가
+    else {
+      await newUserMap.save();
+      maps.push(newUserMap);
+    }
+
+    // 섬네일 제작
     await makeThumbnail(mid, maps);
   }
 
