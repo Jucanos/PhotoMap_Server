@@ -32,6 +32,9 @@ jobs:
           echo BASE_PATH=${{ secrets.DEV_BASE_PATH }} >> .env
           echo KAKAO_APP_ID=${{ secrets.KAKAO_APP_ID }} >> .env
           echo KAKAO_ADMIN_KEY=${{ secrets.KAKAO_ADMIN_KEY }} >> .env
+      - name: save .json
+        run: |
+          echo ${{ secrets.FIREBASE_KEY }} >> photomap-firebase-adminkey.json
       - name: serverless deploy
         uses: serverless/github-action@master
         with:

@@ -18,6 +18,9 @@ const cityString = {
   jeju: '제주도',
 };
 
+// FCM 가져오기
+const { sendPush } = require('./fcm');
+
 module.exports = async (ctx, mid, story = null) => {
   const urlArray = ctx.request.url.split('/');
   const url = urlArray[1];
@@ -74,6 +77,20 @@ module.exports = async (ctx, mid, story = null) => {
       } 지역의 스토리「${story.title}」를 삭제했습니다.`;
     }
   }
+
+  // 푸시알림 보내기
+  const userMaps = await Data.query('PK')
+    .eq(mid)
+    .filter('types')
+    .eq('USER-MAP')
+    .exec();
+  for (let i = 0; i < userMaps.length; i++) {
+    if (userMaps[i].SK == uid) {
+      userMaps.splice(i, 1);
+      break;
+    }
+  }
+  await sendPush(userMaps, data);
 
   const logData = new DClass.Log({
     uid,

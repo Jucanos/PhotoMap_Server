@@ -106,3 +106,6 @@ dist
 
 # webpack directories
 .webpack
+
+# firebase admin key
+photomap-firebase-adminkey.json
