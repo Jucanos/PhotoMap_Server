@@ -33,14 +33,14 @@ exports.sendPush = async (users, body = '본문') => {
 
   for (let i = 0; i < users.length; ) {
     condition = '';
-    for (let j = 0; j < 5 && i + j < users.length; i++, j++) {
-      condition += `${users[i + j].PK} in topics`;
-      if (!(j == 4 || i + j == users.length - 1)) {
+    for (let j = 0; j < 5 && i < users.length; i++, j++) {
+      condition += `${users[i].PK} in topics`;
+      if (!(j == 4 || i == users.length - 1)) {
         condition += ' || ';
       }
     }
 
-    message.condidion = condition;
+    message.condition = condition;
 
     admin
       .messaging()
