@@ -32,6 +32,9 @@ const { statusCode, createResponse } = require('./modules/util');
 
 /* 지도의 로그정보 가져오기 */
 router.get('/:id', async ctx => {
+  // 함수 호출위치 로그
+  console.log(ctx.request.url, ctx.request.method);
+
   // 파라미터 가져오기
   const mid = ctx.params.id;
   const createdAt = ctx.params.createdAt || '3000-01-01T01:00:00.000Z';

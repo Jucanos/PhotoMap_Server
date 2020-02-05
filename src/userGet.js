@@ -30,7 +30,11 @@ module.exports.handler = async (ctx, context) => {
       authorization: ctx.headers.Authorization,
       'user-agent': ctx.headers['User-Agent'],
     },
+    url: ctx.path,
+    method: ctx.httpMethod,
   };
+  // 함수 호출위치 로그
+  console.log(ctx.request.url, ctx.request.method);
 
   // 카카오톡 유저정보 가져오기
   const result = await kakaoRequest(ctx, paths.getInfo);

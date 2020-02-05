@@ -48,6 +48,9 @@ const { makeThumbnail } = require('./modules/canvas');
 
 /* 특정 지도 정보 가져오기 */
 router.get('/:id', async ctx => {
+  // 함수 호출위치 로그
+  console.log(ctx.request.url, ctx.request.method);
+
   // 파라미터 가져오기
   const mid = ctx.params.id;
 
@@ -103,6 +106,9 @@ router.get('/:id', async ctx => {
 
 /* 대표사진 설정하기 */
 router.post('/:id', upload.single('img'), async ctx => {
+  // 함수 호출위치 로그
+  console.log(ctx.request.url, ctx.request.method);
+
   // 파라미터 가져오기
   const mid = ctx.params.id;
   const cityKey = ctx.request.body.cityKey;
@@ -172,6 +178,9 @@ router.post('/:id', upload.single('img'), async ctx => {
 
 /* 유저-지도의 이름 수정 */
 router.put('/:id', bodyParser(), async ctx => {
+  // 함수 호출위치 로그
+  console.log(ctx.request.url, ctx.request.method);
+
   // JWT에서 uid 가져오기
   const uid = getUid(ctx);
 
@@ -219,6 +228,9 @@ router.put('/:id', bodyParser(), async ctx => {
 
 /* 지도에 사용자 추가/삭제 */
 router.patch('/:id', bodyParser(), async ctx => {
+  // 함수 호출위치 로그
+  console.log(ctx.request.url, ctx.request.method);
+
   // JWT에서 uid 가져오기
   const uid = getUid(ctx);
 
@@ -328,6 +340,9 @@ router.patch('/:id', bodyParser(), async ctx => {
 
 /* 지도 삭제 */
 router.delete('/:id', async ctx => {
+  // 함수 호출위치 로그
+  console.log(ctx.request.url, ctx.request.method);
+
   // JWT에서 uid 가져오기
   const uid = getUid(ctx);
 

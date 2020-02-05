@@ -39,6 +39,9 @@ const { makeThumbnail } = require('./modules/canvas');
 
 /* 지도 리스트 가져오기 */
 router.get('/', async ctx => {
+  // 함수 호출위치 로그
+  console.log(ctx.request.url, ctx.request.method);
+
   // JWT에서 uid 가져오기
   const uid = getUid(ctx);
 
@@ -65,6 +68,9 @@ router.get('/', async ctx => {
 
 /* 새로운 지도 생성 */
 router.post('/', bodyParser(), async ctx => {
+  // 함수 호출위치 로그
+  console.log(ctx.request.url, ctx.request.method);
+
   // JWT에서 uid 가져오기
   const uid = getUid(ctx);
 

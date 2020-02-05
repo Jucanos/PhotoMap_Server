@@ -45,6 +45,8 @@ module.exports.handler = async (ctx, context) => {
   ctx.req = {
     requestContext: ctx.requestContext,
   };
+  // 함수 호출위치 로그
+  console.log(ctx.request.url, ctx.request.method);
 
   // JWT에서 uid 가져오기
   const uid = getUid(ctx);

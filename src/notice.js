@@ -31,6 +31,9 @@ const { uuid, statusCode, createResponse } = require('./modules/util');
 
 /* 공지사항 가져오기 */
 router.get('/', async ctx => {
+  // 함수 호출위치 로그
+  console.log(ctx.request.url, ctx.request.method);
+
   // 공지사항 가져오기
   const notices = await Notice.scan().exec();
 
