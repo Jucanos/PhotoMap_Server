@@ -402,7 +402,7 @@ router.delete('/:id', async ctx => {
   await Promise.all(deleteQueue.map(q => q.delete()));
 
   // s3 폴더 삭제
-  deleteFolder(mid);
+  await deleteFolder(mid);
 
   createResponse(ctx, statusCode.processingSuccess, null);
 });

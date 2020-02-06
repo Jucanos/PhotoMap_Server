@@ -92,7 +92,7 @@ module.exports.handler = async (ctx, context) => {
         .exec();
 
       // 지도에 연결된 s3 폴더 삭제
-      deleteFolder(maps[i].PK);
+      await deleteFolder(maps[i].PK);
 
       for (let i = 0; i < storyLogs.count; i++) {
         deleteQueue.push(storyLogs[i]);
@@ -116,27 +116,6 @@ module.exports.handler = async (ctx, context) => {
   }
   // 전부 delete가 될때까지 대기
   await Promise.all(deleteQueue.map(q => q.delete()));
-
-  // 푸시토큰 조회
-  const result = await kakaoRequest(ctx, paths.searchPushToken, {
-    uuid: uid,
-  });
-  console.log(result);
-
-  // 푸시토큰 삭제
-  const push_type = getDeviceType(ctx);
-
-  if (push_type != null) {
-    for (let i in result) {
-      const device_id = result[i].device_id;
-
-      await kakaoRequest(ctx, paths.deregisterPushToken, {
-        uuid: uid,
-        device_id,
-        push_type,
-      });
-    }
-  }
 
   return {
     statusCode: statusCode.processingSuccess,

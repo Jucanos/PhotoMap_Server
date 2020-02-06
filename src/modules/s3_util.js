@@ -66,6 +66,22 @@ exports.deleteObject = async obj => {
   await s3.deleteObject(params).promise();
 };
 
+// 여러 객체 삭제
+exports.deleteArray = async objArray => {
+  let deleteParams = {
+    Bucket: process.env.S3_BUCKET_NAME,
+    Delete: {
+      Objects: objArray.map(obj => ({
+        Key: obj.key.includes(process.env.S3_CUSTOM_DOMAIN)
+          ? obj.key.split(process.env.S3_CUSTOM_DOMAIN)[1]
+          : obj.key,
+      })),
+    },
+  };
+
+  await s3.deleteObjects(deleteParams).promise();
+};
+
 // 폴더 삭제
 exports.deleteFolder = async prefix => {
   let listParams = {
