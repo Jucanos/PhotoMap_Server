@@ -92,7 +92,7 @@ module.exports.handler = async (ctx, context) => {
         .exec();
 
       // 지도에 연결된 s3 폴더 삭제
-      deleteFolder(maps[i].PK);
+      await deleteFolder(maps[i].PK);
 
       for (let i = 0; i < storyLogs.count; i++) {
         deleteQueue.push(storyLogs[i]);
