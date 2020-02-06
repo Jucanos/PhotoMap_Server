@@ -171,7 +171,7 @@ router.post('/:id', upload.single('img'), async ctx => {
   await Data.update(mapData.json());
 
   // 로그
-  Logger(ctx, mid, { cityKey });
+  await Logger(ctx, mid, { cityKey });
 
   createResponse(ctx, statusCode.success, mapData.represents);
 });
@@ -333,7 +333,7 @@ router.patch('/:id', bodyParser(), async ctx => {
   }
 
   // 로그
-  Logger(ctx, mid);
+  await Logger(ctx, mid);
 
   createResponse(ctx, statusCode.processingSuccess, null);
 });

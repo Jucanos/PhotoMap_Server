@@ -111,7 +111,7 @@ module.exports.handler = async (ctx, context) => {
       await makeThumbnail(maps[i].PK, deleteMap);
 
       // 로그
-      Logger(ctx, maps[i].PK);
+      await Logger(ctx, maps[i].PK);
     }
   }
   // 전부 delete가 될때까지 대기

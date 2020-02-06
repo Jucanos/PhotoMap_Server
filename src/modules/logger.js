@@ -28,6 +28,8 @@ module.exports = async (ctx, mid, story = null) => {
 
   const uid = getUid(ctx);
 
+  console.log('[Log]', { url, method });
+
   const user = await Data.queryOne('PK')
     .eq(uid)
     .exec();
@@ -78,6 +80,17 @@ module.exports = async (ctx, mid, story = null) => {
     }
   }
 
+  console.log({ uid, mid, data });
+
+  // 로그 저장하기
+  const logData = new DClass.Log({
+    uid,
+    mid,
+    data,
+  });
+  const newLog = new Data(logData.json());
+  await newLog.save();
+
   // 푸시알림 보내기
   const userMaps = await Data.query('PK')
     .eq(mid)
@@ -91,14 +104,6 @@ module.exports = async (ctx, mid, story = null) => {
     }
   }
   await sendPush(userMaps, data);
-
-  const logData = new DClass.Log({
-    uid,
-    mid,
-    data,
-  });
-  const newLog = new Data(logData.json());
-  await newLog.save();
 };
 
 /*
