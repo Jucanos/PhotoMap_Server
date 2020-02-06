@@ -17,10 +17,11 @@ jobs:
           restore-keys: |
             ${{ runner.OS }}-build-
             ${{ runner.OS }}-
+      - run: npm install
       - name: save .env
         run: |
           echo SLS_DEBUG=* >> .env
-          echo STAGE=dev >> .env
+          echo STAGE=prod >> .env
           echo DYNAMODB_REGION=ap-northeast-2 >> .env
           echo DYNAMODB_NOTICE=${{ secrets.DYNAMODB_NOTICE }} >> .env
           echo DYNAMODB_TABLE=${{ secrets.PROD_DYNAMODB_TABLE }} >> .env
