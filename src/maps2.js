@@ -112,18 +112,21 @@ router.post('/:id', upload.single('img'), async ctx => {
   // 파라미터 가져오기
   const mid = ctx.params.id;
   const cityKey = ctx.request.body.cityKey;
+  const remove = ctx.request.body.remove || 'false';
   const file = ctx.file;
   console.log('[Parameter]', { mid, cityKey, file });
 
   // file 존재여부 확인
-  if (isUndefined(file)) {
+  if (remove == 'false' && isUndefined(file)) {
     console.error('file is undefined');
     return createResponse(ctx, statusCode.failure, null, 'file is undefined');
   }
 
   // cityKey 존재여부 확인
   if (isUndefined(cityKey)) {
-    deleteObject(file.key);
+    if (remove == 'false') {
+      deleteObject(file.key);
+    }
 
     console.error('cityKey is undefined');
     return createResponse(
@@ -136,7 +139,9 @@ router.post('/:id', upload.single('img'), async ctx => {
 
   // cityKey가 valid한지 확인
   if (representsDefault.indexOf(cityKey) == -1) {
-    deleteObject(file.key);
+    if (remove == 'false') {
+      deleteObject(file.key);
+    }
 
     console.error('cityKey is invalid');
     return createResponse(ctx, statusCode.failure, null, 'cityKey is invalid');
@@ -152,7 +157,9 @@ router.post('/:id', upload.single('img'), async ctx => {
 
   // 지도가 존재하는지 확인
   if (isUndefined(map)) {
-    deleteObject(file.key);
+    if (remove == 'false') {
+      deleteObject(file.key);
+    }
 
     console.error('map is not exist');
     return createResponse(ctx, statusCode.failure, null, 'map is not exist');
@@ -167,7 +174,11 @@ router.post('/:id', upload.single('img'), async ctx => {
   }
 
   // 현재 지도데이터 업데이트
-  mapData.represents[cityKey] = process.env.S3_CUSTOM_DOMAIN + file.key;
+  if (remove == 'true') {
+    mapData.represents[cityKey] = null;
+  } else {
+    mapData.represents[cityKey] = process.env.S3_CUSTOM_DOMAIN + file.key;
+  }
   await Data.update(mapData.json());
 
   // 로그
