@@ -1,14 +1,16 @@
 on:
   push:
     branches:
-      - master
-name: Deploy master branch
+      - develop
+name: Deploy develop branch
 jobs:
   deploy:
     name: deploy
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
+        with:
+          ref: 'develop'
       - name: Cache node modules # node modules 캐싱
         uses: actions/cache@v1
         with:
@@ -21,13 +23,13 @@ jobs:
       - name: save .env
         run: |
           echo SLS_DEBUG=* >> .env
-          echo STAGE=prod >> .env
+          echo STAGE=dev >> .env
           echo DYNAMODB_REGION=ap-northeast-2 >> .env
           echo DYNAMODB_NOTICE=${{ secrets.DYNAMODB_NOTICE }} >> .env
-          echo DYNAMODB_TABLE=${{ secrets.PROD_DYNAMODB_TABLE }} >> .env
+          echo DYNAMODB_TABLE=${{ secrets.DEV_DYNAMODB_TABLE }} >> .env
           echo S3_BUCKET_NAME=${{ secrets.S3_BUCKET_NAME }} >> .env
           echo S3_CUSTOM_DOMAIN=${{ secrets.S3_CUSTOM_DOMAIN }} >> .env
-          echo BASE_PATH=${{ secrets.PROD_BASE_PATH }} >> .env
+          echo BASE_PATH=${{ secrets.DEV_BASE_PATH }} >> .env
           echo KAKAO_APP_ID=${{ secrets.KAKAO_APP_ID }} >> .env
           echo KAKAO_ADMIN_KEY=${{ secrets.KAKAO_ADMIN_KEY }} >> .env
           echo FIREBASE_PROJECT_ID=${{ secrets.FIREBASE_PROJECT_ID }} >> .env
@@ -43,8 +45,8 @@ jobs:
         env:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-          ENV: prod
-          STAGE: prod
+          ENV: dev
+          STAGE: dev
       - name: Slack Notification
         uses: rtCamp/action-slack-notify@v2.0.0
         env:
