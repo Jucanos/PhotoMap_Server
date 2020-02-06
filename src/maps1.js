@@ -97,7 +97,7 @@ router.post('/', bodyParser(), async ctx => {
   await makeThumbnail(mapData.mid, [newUserMap]);
 
   // 로그
-  Logger(ctx, mapData.mid);
+  await Logger(ctx, mapData.mid);
 
   createResponse(ctx, statusCode.success, mapData);
 });

@@ -41,6 +41,7 @@ exports.sendPush = async (users, body = '본문') => {
     }
 
     message.condition = condition;
+    console.log('[FCM Push]', message);
 
     admin
       .messaging()

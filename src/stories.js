@@ -128,7 +128,7 @@ router.post('/:id', upload.array('img', 5), async ctx => {
   await newStory.save();
 
   // 로그
-  Logger(ctx, mid, storyData);
+  await Logger(ctx, mid, storyData);
 
   createResponse(ctx, statusCode.success, storyData);
 });
@@ -239,7 +239,7 @@ router.patch('/:id', bodyParser(), async ctx => {
   await Data.update(storyData.json());
 
   // 로그
-  Logger(ctx, storyData.mid, storyData);
+  await Logger(ctx, storyData.mid, storyData);
 
   createResponse(ctx, statusCode.processingSuccess, null);
 });
@@ -305,7 +305,7 @@ router.delete('/:id', async ctx => {
   }
 
   // 로그
-  Logger(ctx, storyData.mid, storyData);
+  await Logger(ctx, storyData.mid, storyData);
 
   createResponse(ctx, statusCode.processingSuccess, null);
 });
