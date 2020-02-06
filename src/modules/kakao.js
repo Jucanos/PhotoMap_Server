@@ -16,9 +16,6 @@ const adminKey = `KakaoAK ${process.env.KAKAO_ADMIN_KEY}`;
 exports.paths = Object.freeze({
   verify: ['GET', '/v1/user/access_token_info', false],
   getInfo: ['GET', '/v2/user/me', false],
-  registerPushToken: ['POST', '/v1/push/register', true],
-  deregisterPushToken: ['POST', '/v1/push/deregister', true],
-  searchPushToken: ['GET', '/v1/push/tokens', true],
 });
 
 exports.request = request;
@@ -31,22 +28,6 @@ exports.getOptions = (path, auth) => ({
     Authorization: auth,
   },
 });
-
-exports.getDeviceType = ctx => {
-  const user = ctx.request.header['user-agent'].toLowerCase();
-
-  if (user.includes('postman')) {
-    return null;
-  }
-
-  if (user.includes('okhttp')) {
-    return 'gcm';
-  }
-
-  if (user.includes('CFNetwork')) {
-    return 'apns';
-  }
-};
 
 exports.kakaoRequest = async (ctx, path, form = {}) => {
   let options = null;

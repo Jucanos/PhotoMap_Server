@@ -213,16 +213,7 @@ functions:
           path: /logs/{any+}
           method: GET
           authorizer: authorize
-  # 푸시 관련 함수
-  Push:
-    handler: src/push.handler
-    tracing: true
-    events:
-      - http:
-          path: /push
-          method: ANY
-          authorizer: authorize
-  # 푸시 관련 함수
+  # 공지 관련 함수
   Notice:
     handler: src/notice.handler
     tracing: true

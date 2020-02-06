@@ -20,7 +20,7 @@ const awsXRay = require('aws-xray-sdk');
 const awsSdk = awsXRay.captureAWS(require('aws-sdk'));
 
 // s3 가져오기
-const { upload, deleteObject } = require('./modules/s3_util');
+const { upload, deleteArray } = require('./modules/s3_util');
 
 // Dynamoose 설정
 const { Data } = require('./modules/dynamo_schema');
@@ -67,9 +67,7 @@ router.post('/:id', upload.array('img', 5), async ctx => {
 
   // cityKey 존재여부 확인
   if (isUndefined(cityKey)) {
-    for (const i in files) {
-      deleteObject(files[i].key);
-    }
+    await deleteArray(files);
 
     console.error('cityKey is undefined');
     return createResponse(
@@ -82,9 +80,7 @@ router.post('/:id', upload.array('img', 5), async ctx => {
 
   // cityKey가 valid한지 확인
   if (representsDefault.indexOf(cityKey) == -1) {
-    for (const i in files) {
-      deleteObject(files[i].key);
-    }
+    await deleteArray(files);
 
     console.error('cityKey is invalid');
     return createResponse(ctx, statusCode.failure, null, 'cityKey is invalid');
@@ -100,9 +96,7 @@ router.post('/:id', upload.array('img', 5), async ctx => {
     .exec();
 
   if (isUndefined(map)) {
-    for (const i in files) {
-      deleteObject(files[i].key);
-    }
+    await deleteArray(files);
 
     console.error('map is not exist');
     return createResponse(ctx, statusCode.failure, null, 'map is not exist');
@@ -300,9 +294,7 @@ router.delete('/:id', async ctx => {
   await story.delete();
 
   // s3 객체를 삭제한다.
-  for (const i in storyData.files) {
-    await deleteObject(storyData.files[i]);
-  }
+  await deleteArray(storyData.files.map(file => ({ key: file })));
 
   // 로그
   await Logger(ctx, storyData.mid, storyData);
