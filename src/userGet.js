@@ -17,7 +17,7 @@ const { paths, kakaoRequest } = require('./modules/kakao');
 
 /**
  * Route: /users
- * Method: get, delete
+ * Method: get
  */
 
 /* 유저 정보 가져오기 */

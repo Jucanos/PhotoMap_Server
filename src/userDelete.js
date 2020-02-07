@@ -26,7 +26,7 @@ const { makeThumbnail } = require('./modules/canvas');
 
 /**
  * Route: /users
- * Method: get, delete
+ * Method: delete
  */
 
 /* 유저 삭제 */

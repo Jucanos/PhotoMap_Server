@@ -77,3 +77,7 @@ exports.Notice = dynamoose.model(process.env.DYNAMODB_NOTICE, NoticeSchema, {
   update: true,
   tableName: process.env.DYNAMODB_NOTICE,
 });
+
+exports.updateTimestamp = async (mid, uid) => {
+  await this.Data.update({ PK: mid, SK: uid });
+};
