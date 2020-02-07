@@ -121,6 +121,9 @@ router.post('/:id', upload.array('img', 5), async ctx => {
   const newStory = new Data(storyData.json());
   await newStory.save();
 
+  // 유저-지도에 updatedAt 반영
+  await updateTimestamp(mid);
+
   // 로그
   await Logger(ctx, mid, storyData);
 
@@ -232,6 +235,9 @@ router.patch('/:id', bodyParser(), async ctx => {
   storyData.update({ title, context });
   await Data.update(storyData.json());
 
+  // 유저-지도에 updatedAt 반영
+  await updateTimestamp(mid);
+
   // 로그
   await Logger(ctx, storyData.mid, storyData);
 
@@ -295,6 +301,9 @@ router.delete('/:id', async ctx => {
 
   // s3 객체를 삭제한다.
   await deleteArray(storyData.files.map(file => ({ key: file })));
+
+  // 유저-지도에 updatedAt 반영
+  await updateTimestamp(mid);
 
   // 로그
   await Logger(ctx, storyData.mid, storyData);

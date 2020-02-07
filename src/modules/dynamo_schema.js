@@ -77,3 +77,15 @@ exports.Notice = dynamoose.model(process.env.DYNAMODB_NOTICE, NoticeSchema, {
   update: true,
   tableName: process.env.DYNAMODB_NOTICE,
 });
+
+exports.updateTimestamp = async mid => {
+  const userMaps = await this.Data.query('PK')
+    .eq(mid)
+    .filter('types')
+    .eq('USER-MAP')
+    .exec();
+
+  for (const userMap of userMaps) {
+    await this.Data.update({ PK: userMap.PK, SK: userMap.SK });
+  }
+};

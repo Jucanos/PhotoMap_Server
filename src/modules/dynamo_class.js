@@ -57,6 +57,11 @@ exports.User = class User extends Data {
     if (!isUndefined(options.content)) {
       this.uid = options.PK;
     }
+
+    // primary 초기화
+    if (isUndefined(this.primary)) {
+      this.primary = null;
+    }
   }
 
   json() {
@@ -67,6 +72,7 @@ exports.User = class User extends Data {
       content: {
         nickname: this.nickname,
         thumbnail: this.thumbnail,
+        primary: this.primary,
       },
     };
   }

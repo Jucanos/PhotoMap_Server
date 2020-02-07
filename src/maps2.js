@@ -23,7 +23,7 @@ const awsSdk = awsXRay.captureAWS(require('aws-sdk'));
 const { upload, deleteObject, deleteFolder } = require('./modules/s3_util');
 
 // Dynamoose 설정
-const { Data } = require('./modules/dynamo_schema');
+const { Data, updateTimestamp } = require('./modules/dynamo_schema');
 
 // DClass와 util 가져오기
 const DClass = require('./modules/dynamo_class');
@@ -89,17 +89,9 @@ router.get('/:id', async ctx => {
     let user = DClass.parseClass(owners[i]);
     delete user.createdAt;
     delete user.updatedAt;
+    delete user.primary;
     data.owners.push(user);
   }
-
-  // TODO: 스토리와 로그 완성 후 가져오는거 추가
-  // 다른 정보 가져오기
-  // const contents = await Data.query('SK')
-  //   .using('GSI')
-  //   .eq(mid)
-  //   .exec();
-
-  // console.log(contents);
 
   createResponse(ctx, statusCode.success, data);
 });
@@ -180,6 +172,9 @@ router.post('/:id', upload.single('img'), async ctx => {
     mapData.represents[cityKey] = process.env.S3_CUSTOM_DOMAIN + file.key;
   }
   await Data.update(mapData.json());
+
+  // 유저-지도에 updatedAt 반영
+  await updateTimestamp(mid);
 
   // 로그
   await Logger(ctx, mid, { cityKey });
@@ -342,6 +337,9 @@ router.patch('/:id', bodyParser(), async ctx => {
     // 섬네일 제작
     await makeThumbnail(mid, maps);
   }
+
+  // 유저-지도에 updatedAt 반영
+  await updateTimestamp(mid);
 
   // 로그
   await Logger(ctx, mid);
