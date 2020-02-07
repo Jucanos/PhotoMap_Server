@@ -9,14 +9,11 @@ const awsSdk = awsXRay.captureAWS(require('aws-sdk'));
 const { deleteFolder } = require('./modules/s3_util');
 
 // Dynamoose 설정
-const { Data } = require('./modules/dynamo_schema');
+const { Data, updateTimestamp } = require('./modules/dynamo_schema');
 
 // DClass와 util 가져오기
 const DClass = require('./modules/dynamo_class');
 const { statusCode, getUid } = require('./modules/util');
-
-// Request 가져오기
-const { paths, kakaoRequest, getDeviceType } = require('./modules/kakao');
 
 // Logger 가져오기
 const Logger = require('./modules/logger');
@@ -59,6 +56,9 @@ module.exports.handler = async (ctx, context) => {
 
   // 삭제할 model들 queue
   let deleteQueue = [];
+
+  // 변경사항이 생긴 mid들
+  let updateMaps = [];
 
   // user를 삭제할 queue에 담는다.
   deleteQueue.push(exUser);
@@ -110,12 +110,20 @@ module.exports.handler = async (ctx, context) => {
       }
       await makeThumbnail(maps[i].PK, deleteMap);
 
+      // 유저-지도를 업데이트할 mid 추가
+      updateMaps.push(maps[i].PK);
+
       // 로그
       await Logger(ctx, maps[i].PK);
     }
   }
   // 전부 delete가 될때까지 대기
   await Promise.all(deleteQueue.map(q => q.delete()));
+
+  // 지도의 유저-지도 업데이트
+  for (const mid of updateMaps) {
+    await updateTimestamp(mid);
+  }
 
   return {
     statusCode: statusCode.processingSuccess,

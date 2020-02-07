@@ -24,12 +24,7 @@ const { Data } = require('./modules/dynamo_schema');
 
 // DClass와 util 가져오기
 const DClass = require('./modules/dynamo_class');
-const {
-  getUid,
-  statusCode,
-  isUndefined,
-  createResponse,
-} = require('./modules/util');
+const { getUid, statusCode, createResponse } = require('./modules/util');
 
 /**
  * Route: /users/{mid}
