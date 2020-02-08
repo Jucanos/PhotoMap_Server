@@ -55,7 +55,7 @@ router.patch('/:id', bodyParser(), async ctx => {
 
   // 유저정보 parsing
   const userData = DClass.parseClass(user);
-  console.log({ userData });
+  console.log('before: ', { userData });
 
   // 대표지도 삭제 or 변경 확인
   if (remove == 'true') {
@@ -63,6 +63,7 @@ router.patch('/:id', bodyParser(), async ctx => {
   } else {
     userData.primary = mid;
   }
+  console.log('after: ', { userData });
 
   // DB에 반영
   await Data.update(userData.json());

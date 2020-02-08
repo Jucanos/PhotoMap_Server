@@ -70,6 +70,7 @@ module.exports.handler = async (ctx, context) => {
   // user가 존재하면 회원정보 반환
   else {
     let userDB = DClass.parseClass(user);
+    userData.primary = userDB.primary;
 
     // nickname과 thumbnail중 하나라도 다르면
     if (!userData.equal(userDB)) {
