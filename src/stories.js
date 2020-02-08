@@ -23,7 +23,7 @@ const awsSdk = awsXRay.captureAWS(require('aws-sdk'));
 const { upload, deleteArray } = require('./modules/s3_util');
 
 // Dynamoose 설정
-const { Data } = require('./modules/dynamo_schema');
+const { Data, updateTimestamp } = require('./modules/dynamo_schema');
 
 // DClass와 util 가져오기
 const DClass = require('./modules/dynamo_class');
@@ -236,7 +236,7 @@ router.patch('/:id', bodyParser(), async ctx => {
   await Data.update(storyData.json());
 
   // 유저-지도에 updatedAt 반영
-  await updateTimestamp(mid);
+  await updateTimestamp(storyData.mid);
 
   // 로그
   await Logger(ctx, storyData.mid, storyData);
@@ -303,7 +303,7 @@ router.delete('/:id', async ctx => {
   await deleteArray(storyData.files.map(file => ({ key: file })));
 
   // 유저-지도에 updatedAt 반영
-  await updateTimestamp(mid);
+  await updateTimestamp(storyData.mid);
 
   // 로그
   await Logger(ctx, storyData.mid, storyData);
