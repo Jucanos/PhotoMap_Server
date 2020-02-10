@@ -37,7 +37,7 @@ router.get('/:id', async ctx => {
 
   // 파라미터 가져오기
   const mid = ctx.params.id;
-  const createdAt = ctx.params.createdAt || '3000-01-01T01:00:00.000Z';
+  const createdAt = ctx.query.createdAt || '3000-01-01T01:00:00.000Z';
   console.log('[Parameter]', { mid, createdAt });
 
   // 로그 가져오기
