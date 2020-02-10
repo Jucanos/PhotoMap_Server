@@ -51,8 +51,13 @@ router.get('/:id', async ctx => {
   // 함수 호출위치 로그
   console.log(ctx.request.url, ctx.request.method);
 
+  // JWT에서 uid 가져오기
+  const uid = getUid(ctx);
+
   // 파라미터 가져오기
   const mid = ctx.params.id;
+  const primary = ctx.query.primary || 'false';
+  console.log('[Parameter]', { mid, primary });
 
   // 지도 정보 가져오기
   const maps = await Data.query('PK')
@@ -62,8 +67,16 @@ router.get('/:id', async ctx => {
     .exec();
 
   if (maps.count == 0) {
-    console.error('map is not exist');
-    return createResponse(ctx, statusCode.failure, null, 'map is not exist');
+    if (primary == 'true') {
+      await Data.update(
+        { PK: uid, SK: 'INFO' },
+        { content: { primary: null } }
+      );
+      return createResponse(ctx, statusCode.success, null);
+    } else {
+      console.error('map is not exist');
+      return createResponse(ctx, statusCode.failure, null, 'map is not exist');
+    }
   }
 
   // 지도정보와 사용자 정보 분리
