@@ -135,7 +135,7 @@ router.post('/:id', upload.single('img'), async ctx => {
   // cityKey 존재여부 확인
   if (isUndefined(cityKey)) {
     if (remove == 'false') {
-      deleteObject(file.key);
+      await deleteObject(file.key);
     }
 
     console.error('cityKey is undefined');
@@ -150,7 +150,7 @@ router.post('/:id', upload.single('img'), async ctx => {
   // cityKey가 valid한지 확인
   if (representsDefault.indexOf(cityKey) == -1) {
     if (remove == 'false') {
-      deleteObject(file.key);
+      await deleteObject(file.key);
     }
 
     console.error('cityKey is invalid');
@@ -169,7 +169,7 @@ router.post('/:id', upload.single('img'), async ctx => {
   // 지도가 존재하는지 확인
   if (isUndefined(map)) {
     if (remove == 'false') {
-      deleteObject(file.key);
+      await deleteObject(file.key);
     }
 
     console.error('map is not exist');
@@ -181,7 +181,7 @@ router.post('/:id', upload.single('img'), async ctx => {
   // 이전 이미지 삭제
   const beforeImg = mapData.represents[cityKey];
   if (beforeImg != null) {
-    deleteObject(beforeImg);
+    await deleteObject(beforeImg);
   }
 
   // 현재 지도데이터 업데이트
@@ -294,7 +294,7 @@ router.patch('/:id', bodyParser(), async ctx => {
       .exec();
 
     // 지도 삭제시 연결된 S3의 지도폴더도 삭제 필요
-    deleteFolder(mid);
+    await deleteFolder(mid);
 
     // 스토리와 로그들을 deleteQueue에 넣는다.
     for (let i = 0; i < storyLogs.count; i++) {
