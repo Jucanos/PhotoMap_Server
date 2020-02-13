@@ -82,6 +82,13 @@ module.exports = async (ctx, mid, story = null) => {
   }
   console.log({ uid, mid, data });
 
+  // logId 가져오기
+  const logId = await Data.update(
+    { PK: mid, SK: 'INFO' },
+    { $ADD: { views: 1 } }
+  );
+  console.log({ logId });
+
   // 로그 저장하기
   const logData = new DClass.Log({
     uid,
@@ -98,6 +105,15 @@ module.exports = async (ctx, mid, story = null) => {
     .filter('types')
     .eq('USER-MAP')
     .exec();
+
+  // 유저-지도의 logNumber 업데이트
+  for (const userMap of userMaps) {
+    await Data.update(
+      { PK: userMap.PK, SK: userMap.SK },
+      { $ADD: { views: 1 } }
+    );
+  }
+
   // 푸시알림 보내기
   for (let i = 0; i < userMaps.length; i++) {
     // 자기 자신을 제외하고 보내기
