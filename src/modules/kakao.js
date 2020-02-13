@@ -32,9 +32,11 @@ exports.getOptions = (path, auth) => ({
 exports.kakaoRequest = async (ctx, path, form = {}) => {
   let options = null;
 
+  // AdminKey가 필요한 경우인지 확인
   if (path[2]) options = this.getOptions(path, adminKey);
   else options = this.getOptions(path, getAuth(ctx));
 
+  // Method가 GET이면 query 생성
   if (path[0] == 'GET') {
     let query = '?';
     const keys = Object.keys(form);
@@ -43,9 +45,12 @@ exports.kakaoRequest = async (ctx, path, form = {}) => {
       if (i != keys.length - 1) query += '&';
     }
     options.uri += query;
-  } else options.form = form;
+  }
+  // 그 외의 Method의 경우 form으로 적용
+  else options.form = form;
   console.log('[kakaoRequest]', { options });
 
+  // 카카오 API 결과 받아오기
   const result = await request_promise(options);
   console.log('[kakaoRequest]', { result });
 

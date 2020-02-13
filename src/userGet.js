@@ -22,9 +22,11 @@ const { paths, kakaoRequest } = require('./modules/kakao');
 
 /* 유저 정보 가져오기 */
 module.exports.handler = async (ctx, context) => {
+  // lambda handler 기본 환경설정
   context.basePath = process.env.BASE_PATH;
   context.callbackWaitsForEmptyEventLoop = false;
 
+  // router 삭제로 인한 변수 이동
   ctx.request = {
     header: {
       authorization: ctx.headers.Authorization,

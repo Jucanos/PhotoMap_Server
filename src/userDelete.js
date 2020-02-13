@@ -9,7 +9,7 @@ const awsSdk = awsXRay.captureAWS(require('aws-sdk'));
 const { deleteFolder } = require('./modules/s3_util');
 
 // Dynamoose 설정
-const { Data, updateTimestamp } = require('./modules/dynamo_schema');
+const { Data } = require('./modules/dynamo_schema');
 
 // DClass와 util 가져오기
 const DClass = require('./modules/dynamo_class');
@@ -28,9 +28,11 @@ const { makeThumbnail } = require('./modules/canvas');
 
 /* 유저 삭제 */
 module.exports.handler = async (ctx, context) => {
+  // lambda handler 기본 환경설정
   context.basePath = process.env.BASE_PATH;
   context.callbackWaitsForEmptyEventLoop = false;
 
+  // router 삭제로 인한 변수 이동
   ctx.request = {
     header: {
       authorization: ctx.headers.Authorization,
@@ -45,7 +47,7 @@ module.exports.handler = async (ctx, context) => {
   // 함수 호출위치 로그
   console.log(ctx.request.url, ctx.request.method);
 
-  // JWT에서 uid 가져오기
+  // Auth에서 uid 가져오기
   const uid = getUid(ctx);
 
   // uid로 User 객체 생성
@@ -56,9 +58,6 @@ module.exports.handler = async (ctx, context) => {
 
   // 삭제할 model들 queue
   let deleteQueue = [];
-
-  // 변경사항이 생긴 mid들
-  let updateMaps = [];
 
   // user를 삭제할 queue에 담는다.
   deleteQueue.push(exUser);
@@ -80,6 +79,7 @@ module.exports.handler = async (ctx, context) => {
       .in(['MAP', 'USER-MAP'])
       .exec();
 
+    // 지도에 사람 혼자 남았을 때
     if (deleteMap.count <= 2) {
       for (let i = 0; i < deleteMap.count; i++) {
         deleteQueue.push(deleteMap[i]);
@@ -94,10 +94,12 @@ module.exports.handler = async (ctx, context) => {
       // 지도에 연결된 s3 폴더 삭제
       await deleteFolder(maps[i].PK);
 
+      // 스토리와 로그들을 deleteQueue에 넣는다.
       for (let i = 0; i < storyLogs.count; i++) {
         deleteQueue.push(storyLogs[i]);
       }
     } else {
+      // 지도에 연결된 유저-지도를 deleteQueue에 넣는다.
       deleteQueue.push(maps[i]);
 
       // 섬네일 제작
@@ -110,20 +112,12 @@ module.exports.handler = async (ctx, context) => {
       }
       await makeThumbnail(maps[i].PK, deleteMap);
 
-      // 유저-지도를 업데이트할 mid 추가
-      updateMaps.push(maps[i].PK);
-
       // 로그
       await Logger(ctx, maps[i].PK);
     }
   }
   // 전부 delete가 될때까지 대기
   await Promise.all(deleteQueue.map(q => q.delete()));
-
-  // 지도의 유저-지도 업데이트
-  for (const mid of updateMaps) {
-    await updateTimestamp(mid);
-  }
 
   return {
     statusCode: statusCode.processingSuccess,

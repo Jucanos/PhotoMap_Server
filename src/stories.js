@@ -23,7 +23,7 @@ const awsSdk = awsXRay.captureAWS(require('aws-sdk'));
 const { upload, deleteArray } = require('./modules/s3_util');
 
 // Dynamoose 설정
-const { Data, updateTimestamp } = require('./modules/dynamo_schema');
+const { Data } = require('./modules/dynamo_schema');
 
 // DClass와 util 가져오기
 const DClass = require('./modules/dynamo_class');
@@ -48,7 +48,7 @@ router.post('/:id', upload.array('img', 5), async ctx => {
   // 함수 호출위치 로그
   console.log(ctx.request.url, ctx.request.method);
 
-  // JWT에서 uid 가져오기
+  // Auth에서 uid 가져오기
   const uid = getUid(ctx);
 
   // 파라미터 가져오기
@@ -121,9 +121,6 @@ router.post('/:id', upload.array('img', 5), async ctx => {
   const newStory = new Data(storyData.json());
   await newStory.save();
 
-  // 유저-지도에 updatedAt 반영
-  await updateTimestamp(mid);
-
   // 로그
   await Logger(ctx, mid, storyData);
 
@@ -180,6 +177,7 @@ router.get('/:id', async ctx => {
   // 함수 호출위치 로그
   console.log(ctx.request.url, ctx.request.method);
 
+  // 파라미터 가져오기
   const sid = ctx.params.id;
 
   // sid로 스토리 가져오기
@@ -235,9 +233,6 @@ router.patch('/:id', bodyParser(), async ctx => {
   storyData.update({ title, context });
   await Data.update(storyData.json());
 
-  // 유저-지도에 updatedAt 반영
-  await updateTimestamp(storyData.mid);
-
   // 로그
   await Logger(ctx, storyData.mid, storyData);
 
@@ -249,7 +244,7 @@ router.delete('/:id', async ctx => {
   // 함수 호출위치 로그
   console.log(ctx.request.url, ctx.request.method);
 
-  // JWT에서 uid 가져오기
+  // Auth에서 uid 가져오기
   const uid = getUid(ctx);
 
   // 파라미터 가져오기
@@ -301,9 +296,6 @@ router.delete('/:id', async ctx => {
 
   // s3 객체를 삭제한다.
   await deleteArray(storyData.files.map(file => ({ key: file })));
-
-  // 유저-지도에 updatedAt 반영
-  await updateTimestamp(storyData.mid);
 
   // 로그
   await Logger(ctx, storyData.mid, storyData);
