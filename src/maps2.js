@@ -51,7 +51,7 @@ router.get('/:id', async ctx => {
   // 함수 호출위치 로그
   console.log(ctx.request.url, ctx.request.method);
 
-  // JWT에서 uid 가져오기
+  // Auth에서 uid 가져오기
   const uid = getUid(ctx);
 
   // 파라미터 가져오기
@@ -66,14 +66,19 @@ router.get('/:id', async ctx => {
     .in(['MAP', 'USER-MAP'])
     .exec();
 
+  // 지도가 존재하지 않을 때
   if (maps.count == 0) {
+    // 만약 대표지도인 경우
     if (primary == 'true') {
+      // User의 primary값을 null로 만들고 null을 return한다.
       await Data.update(
         { PK: uid, SK: 'INFO' },
         { content: { primary: null } }
       );
       return createResponse(ctx, statusCode.success, null);
-    } else {
+    }
+    // 만약 대표지도가 아닌경우 오류반환
+    else {
       console.error('map is not exist');
       return createResponse(ctx, statusCode.failure, null, 'map is not exist');
     }
@@ -152,6 +157,7 @@ router.post('/:id', upload.single('img'), async ctx => {
     return createResponse(ctx, statusCode.failure, null, 'cityKey is invalid');
   }
 
+  // 지도 가져오기
   const map = await Data.queryOne('PK')
     .eq(mid)
     .where('SK')
@@ -200,7 +206,7 @@ router.put('/:id', bodyParser(), async ctx => {
   // 함수 호출위치 로그
   console.log(ctx.request.url, ctx.request.method);
 
-  // JWT에서 uid 가져오기
+  // Auth에서 uid 가져오기
   const uid = getUid(ctx);
 
   // 파라미터 가져오기
@@ -208,6 +214,7 @@ router.put('/:id', bodyParser(), async ctx => {
   const name = ctx.request.body.name;
   console.log('[Parameter]', { mid, name });
 
+  // name이 있는지 확인
   if (isUndefined(name)) {
     console.error('name is required');
     return createResponse(
@@ -227,6 +234,7 @@ router.put('/:id', bodyParser(), async ctx => {
     .eq('USER-MAP')
     .exec();
 
+  // 유저-지도가 없다면 오류
   if (isUndefined(userMap)) {
     console.error('userMap is not exist');
     return createResponse(
@@ -250,7 +258,7 @@ router.patch('/:id', bodyParser(), async ctx => {
   // 함수 호출위치 로그
   console.log(ctx.request.url, ctx.request.method);
 
-  // JWT에서 uid 가져오기
+  // Auth에서 uid 가져오기
   const uid = getUid(ctx);
 
   // 파라미터 가져오기
@@ -264,9 +272,9 @@ router.patch('/:id', bodyParser(), async ctx => {
     .filter('types')
     .in(['MAP', 'USER-MAP'])
     .exec();
-
   console.log({ maps });
 
+  // 지도가 존재하지 않으면 오류
   if (maps.count == 0) {
     console.error('map is not exist');
     return createResponse(ctx, statusCode.failure, null, 'map is not exist');
@@ -288,18 +296,25 @@ router.patch('/:id', bodyParser(), async ctx => {
     // 지도 삭제시 연결된 S3의 지도폴더도 삭제 필요
     deleteFolder(mid);
 
+    // 스토리와 로그들을 deleteQueue에 넣는다.
     for (let i = 0; i < storyLogs.count; i++) {
       deleteQueue.push(storyLogs[i]);
     }
 
     // 삭제를 기다린다.
     await Promise.all(deleteQueue.map(q => q.delete()));
-  } else {
+  }
+  // 지도에 사람이 남아있는 경우
+  else {
+    // 변수 초기화
     let name = '새 지도';
+
+    // 지도와 유저-지도를 돌며 체크
     for (let i = 0; i < maps.count; i++) {
       if (maps[i].types == 'MAP') {
         name = maps[i].content.name;
       }
+      // 유저-지도이고 사용자 추가인경우 이미 등록되있으면 오류
       if (maps[i].types == 'USER-MAP' && remove == 'false') {
         if (uid == maps[i].SK) {
           console.error('you already enrolled in this map');
@@ -365,7 +380,7 @@ router.delete('/:id', async ctx => {
   // 함수 호출위치 로그
   console.log(ctx.request.url, ctx.request.method);
 
-  // JWT에서 uid 가져오기
+  // Auth에서 uid 가져오기
   const uid = getUid(ctx);
 
   // 파라미터 가져오기

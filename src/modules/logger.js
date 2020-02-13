@@ -1,6 +1,5 @@
 // Dynamoose 설정
-const Dynamoose = require('./dynamo_schema');
-const Data = Dynamoose.Data;
+const { Data } = require('./dynamo_schema');
 
 // DClass와 util 가져오기
 const DClass = require('./dynamo_class');
@@ -22,20 +21,22 @@ const cityString = {
 const { sendPush } = require('./fcm');
 
 module.exports = async (ctx, mid, story = null) => {
+  // 데이터 가공
   const urlArray = ctx.request.url.split('/');
   const url = urlArray[1];
   const method = ctx.request.method;
 
+  // uid 가져오기
   const uid = getUid(ctx);
-
   console.log('[Log]', { url, method });
 
+  // user 정보 가져오기
   const user = await Data.queryOne('PK')
     .eq(uid)
     .exec();
-
   const userData = DClass.parseClass(user);
 
+  // url과 method로 로그메세지 가공
   let data = '';
   if (url == 'maps') {
     if (method == 'POST') {
@@ -91,18 +92,21 @@ module.exports = async (ctx, mid, story = null) => {
   const newLog = new Data(logData.json());
   await newLog.save();
 
-  // 푸시알림 보내기
+  // mid에 연결된 유저-지도 가져오기
   const userMaps = await Data.query('PK')
     .eq(mid)
     .filter('types')
     .eq('USER-MAP')
     .exec();
+  // 푸시알림 보내기
   for (let i = 0; i < userMaps.length; i++) {
+    // 자기 자신을 제외하고 보내기
     if (userMaps[i].SK == uid) {
       userMaps.splice(i, 1);
       break;
     }
   }
+  console.log({ userMaps });
   await sendPush(userMaps, data);
 };
 

@@ -41,7 +41,7 @@ router.patch('/:id', bodyParser(), async ctx => {
   const remove = ctx.request.body.remove || 'false';
   console.log('[Parameter]', { mid, remove });
 
-  // JWT에서 uid 가져오기
+  // Auth에서 uid 가져오기
   const uid = getUid(ctx);
 
   // 유저정보 가져오기

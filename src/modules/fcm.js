@@ -31,7 +31,9 @@ exports.sendPush = async (users, body = '본문') => {
     },
   };
 
+  // 최대 5명의 유저씩 끊어서 푸시알림 보내기
   for (let i = 0; i < users.length; ) {
+    // 1~5명의 유저id에 대해서 조건문 생성
     condition = '';
     for (let j = 0; j < 5 && i < users.length; i++, j++) {
       condition += `${users[i].PK} in topics`;
@@ -43,6 +45,7 @@ exports.sendPush = async (users, body = '본문') => {
     message.condition = condition;
     console.log('[FCM Push]', message);
 
+    // 푸시알림 보내기
     admin
       .messaging()
       .send(message)

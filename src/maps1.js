@@ -42,7 +42,7 @@ router.get('/', async ctx => {
   // 함수 호출위치 로그
   console.log(ctx.request.url, ctx.request.method);
 
-  // JWT에서 uid 가져오기
+  // Auth에서 uid 가져오기
   const uid = getUid(ctx);
 
   // uid에 해당하는 user의 count
@@ -72,7 +72,7 @@ router.post('/', bodyParser(), async ctx => {
   // 함수 호출위치 로그
   console.log(ctx.request.url, ctx.request.method);
 
-  // JWT에서 uid 가져오기
+  // Auth에서 uid 가져오기
   const uid = getUid(ctx);
 
   // 파라미터 가져오기

@@ -28,9 +28,11 @@ const { makeThumbnail } = require('./modules/canvas');
 
 /* 유저 삭제 */
 module.exports.handler = async (ctx, context) => {
+  // lambda handler 기본 환경설정
   context.basePath = process.env.BASE_PATH;
   context.callbackWaitsForEmptyEventLoop = false;
 
+  // router 삭제로 인한 변수 이동
   ctx.request = {
     header: {
       authorization: ctx.headers.Authorization,
@@ -45,7 +47,7 @@ module.exports.handler = async (ctx, context) => {
   // 함수 호출위치 로그
   console.log(ctx.request.url, ctx.request.method);
 
-  // JWT에서 uid 가져오기
+  // Auth에서 uid 가져오기
   const uid = getUid(ctx);
 
   // uid로 User 객체 생성
@@ -80,6 +82,7 @@ module.exports.handler = async (ctx, context) => {
       .in(['MAP', 'USER-MAP'])
       .exec();
 
+    // 지도에 사람 혼자 남았을 때
     if (deleteMap.count <= 2) {
       for (let i = 0; i < deleteMap.count; i++) {
         deleteQueue.push(deleteMap[i]);
@@ -94,10 +97,12 @@ module.exports.handler = async (ctx, context) => {
       // 지도에 연결된 s3 폴더 삭제
       await deleteFolder(maps[i].PK);
 
+      // 스토리와 로그들을 deleteQueue에 넣는다.
       for (let i = 0; i < storyLogs.count; i++) {
         deleteQueue.push(storyLogs[i]);
       }
     } else {
+      // 지도에 연결된 유저-지도를 deleteQueue에 넣는다.
       deleteQueue.push(maps[i]);
 
       // 섬네일 제작
