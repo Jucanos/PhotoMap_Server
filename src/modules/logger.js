@@ -50,8 +50,8 @@ module.exports = async (ctx, mid, story = null) => {
       }
     } else if (method == 'PATCH') {
       // PATCH
-      const remove = ctx.request.body.remove;
-      if (remove) {
+      const remove = ctx.request.body.remove || 'false';
+      if (remove == 'true') {
         data = `${userData.nickname}님이 지도에서 나갔습니다.`;
       } else {
         data = `${userData.nickname}님이 지도에 초대되었습니다.`;
@@ -80,7 +80,6 @@ module.exports = async (ctx, mid, story = null) => {
       } 지역의 스토리「${story.title}」를 삭제했습니다.`;
     }
   }
-
   console.log({ uid, mid, data });
 
   // 로그 저장하기
