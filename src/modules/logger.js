@@ -87,6 +87,7 @@ module.exports = async (ctx, mid, story = null) => {
     uid,
     mid,
     data,
+    logId: logId.views,
   });
   const newLog = new Data(logData.json());
   await newLog.save();

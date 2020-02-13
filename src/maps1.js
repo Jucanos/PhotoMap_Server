@@ -60,6 +60,7 @@ router.get('/', async ctx => {
     mapData.push({
       mid: relation.mid,
       name: relation.name,
+      logNumber: relation.logNumber,
       updatedAt: relation.updatedAt,
     });
   }

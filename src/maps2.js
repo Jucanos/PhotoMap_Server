@@ -308,11 +308,14 @@ router.patch('/:id', bodyParser(), async ctx => {
   else {
     // 변수 초기화
     let name = '새 지도';
+    let logNumber = 0;
 
     // 지도와 유저-지도를 돌며 체크
     for (let i = 0; i < maps.count; i++) {
+      // 지도의 경우 name과 logNumber 가져오기
       if (maps[i].types == 'MAP') {
         name = maps[i].content.name;
+        logNumber = maps[i].views;
       }
       // 유저-지도이고 사용자 추가인경우 이미 등록되있으면 오류
       if (maps[i].types == 'USER-MAP' && remove == 'false') {
@@ -327,13 +330,14 @@ router.patch('/:id', bodyParser(), async ctx => {
         }
       }
     }
-    console.log({ name });
+    console.log({ name, logNumber });
 
     // 지도-유저 생성
     const userMapData = new DClass.UserMap({
       mid,
       name,
       uid,
+      logNumber,
     });
     const newUserMap = new Data(userMapData.json());
 
