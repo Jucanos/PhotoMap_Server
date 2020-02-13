@@ -36,7 +36,7 @@ exports.sendPush = async (users, body = '본문') => {
     // 1~5명의 유저id에 대해서 조건문 생성
     condition = '';
     for (let j = 0; j < 5 && i < users.length; i++, j++) {
-      condition += `${users[i].PK} in topics`;
+      condition += `'${users[i].SK}' in topics`;
       if (!(j == 4 || i == users.length - 1)) {
         condition += ' || ';
       }
