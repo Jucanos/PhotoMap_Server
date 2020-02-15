@@ -22,7 +22,7 @@ const awsSdk = awsXRay.captureAWS(require('aws-sdk'));
 const { Notice } = require('./modules/dynamo_schema');
 
 // util 가져오기
-const { uuid, statusCode, createResponse } = require('./modules/util');
+const { statusCode, createResponse } = require('./modules/util');
 
 /**
  * Route: /notice

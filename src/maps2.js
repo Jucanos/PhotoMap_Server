@@ -41,6 +41,9 @@ const Logger = require('./modules/logger');
 // Canvas 가져오기
 const { makeThumbnail } = require('./modules/canvas');
 
+// Firebase 가져오기
+const { deleteMap } = require('./modules/firebase');
+
 /**
  * Route: /maps/{mid}
  * Method: get, post, put, patch, delete
@@ -298,6 +301,9 @@ router.patch('/:id', bodyParser(), async ctx => {
       deleteQueue.push(storyLogs[i]);
     }
 
+    // Realtime DB에서 지도 삭제
+    await deleteMap(mid, [{ types: 'USER-MAP', SK: uid }]);
+
     // 삭제를 기다린다.
     await Promise.all(deleteQueue.map(q => q.delete()));
   }
@@ -305,14 +311,12 @@ router.patch('/:id', bodyParser(), async ctx => {
   else {
     // 변수 초기화
     let name = '새 지도';
-    let logNumber = 0;
 
     // 지도와 유저-지도를 돌며 체크
     for (let i = 0; i < maps.count; i++) {
-      // 지도의 경우 name과 logNumber 가져오기
+      // 지도의 경우 name 가져오기
       if (maps[i].types == 'MAP') {
         name = maps[i].content.name;
-        logNumber = maps[i].views;
       }
       // 유저-지도이고 사용자 추가인경우 이미 등록되있으면 오류
       if (maps[i].types == 'USER-MAP' && remove == 'false') {
@@ -327,14 +331,13 @@ router.patch('/:id', bodyParser(), async ctx => {
         }
       }
     }
-    console.log({ name, logNumber });
+    console.log({ name });
 
     // 지도-유저 생성
     const userMapData = new DClass.UserMap({
       mid,
       name,
       uid,
-      logNumber,
     });
     const newUserMap = new Data(userMapData.json());
 
@@ -350,6 +353,7 @@ router.patch('/:id', bodyParser(), async ctx => {
     if (remove == 'true') {
       await newUserMap.delete();
 
+      // 섬네일 만들 유저-지도 제작
       for (const i in maps) {
         if (maps[i].SK == uid) {
           maps.splice(i, 1);
@@ -357,7 +361,7 @@ router.patch('/:id', bodyParser(), async ctx => {
         }
       }
     }
-    //사용자 추가
+    // 사용자 추가
     else {
       await newUserMap.save();
       maps.push(newUserMap);
@@ -365,10 +369,10 @@ router.patch('/:id', bodyParser(), async ctx => {
 
     // 섬네일 제작
     await makeThumbnail(mid, maps);
-  }
 
-  // 로그
-  await Logger(ctx, mid);
+    // 로그
+    await Logger(ctx, mid);
+  }
 
   createResponse(ctx, statusCode.processingSuccess, null);
 });
@@ -438,6 +442,9 @@ router.delete('/:id', async ctx => {
 
   // s3 폴더 삭제
   await deleteFolder(mid);
+
+  // Realtime DB 적용
+  await deleteMap(mid, maps);
 
   createResponse(ctx, statusCode.processingSuccess, null);
 });

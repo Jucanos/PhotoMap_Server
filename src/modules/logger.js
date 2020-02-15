@@ -18,7 +18,7 @@ const cityString = {
 };
 
 // FCM 가져오기
-const { sendPush } = require('./fcm');
+const { sendPush, atomicCounter, enrollMap, quitMap } = require('./firebase');
 
 module.exports = async (ctx, mid, story = null) => {
   // 데이터 가공
@@ -36,6 +36,10 @@ module.exports = async (ctx, mid, story = null) => {
     .exec();
   const userData = DClass.parseClass(user);
 
+  // logId 가져오기
+  const logId = await atomicCounter(mid);
+  console.log({ logId });
+
   // url과 method로 로그메세지 가공
   let data = '';
   if (url == 'maps') {
@@ -43,6 +47,9 @@ module.exports = async (ctx, mid, story = null) => {
       // POST
       if (urlArray.length == 2) {
         data = `${userData.nickname}님이 지도를 생성하셨습니다.`;
+
+        // Realtime DB에 적용
+        await enrollMap(uid, mid, logId);
       } else if (urlArray.length == 3) {
         data = `${userData.nickname}님이 ${
           cityString[story.cityKey]
@@ -53,8 +60,14 @@ module.exports = async (ctx, mid, story = null) => {
       const remove = ctx.request.body.remove || 'false';
       if (remove == 'true') {
         data = `${userData.nickname}님이 지도에서 나갔습니다.`;
+
+        // Realtime DB에 적용
+        await quitMap(uid, mid);
       } else {
         data = `${userData.nickname}님이 지도에 초대되었습니다.`;
+
+        // Realtime DB에 적용
+        await enrollMap(uid, mid, logId);
       }
     }
   } else if (url == 'users') {
@@ -82,19 +95,12 @@ module.exports = async (ctx, mid, story = null) => {
   }
   console.log({ uid, mid, data });
 
-  // logId 가져오기
-  const logId = await Data.update(
-    { PK: mid, SK: 'INFO' },
-    { $ADD: { views: 1 } }
-  );
-  console.log({ logId });
-
   // 로그 저장하기
   const logData = new DClass.Log({
     uid,
     mid,
     data,
-    logId: logId.views,
+    logId,
   });
   const newLog = new Data(logData.json());
   await newLog.save();
@@ -106,12 +112,9 @@ module.exports = async (ctx, mid, story = null) => {
     .eq('USER-MAP')
     .exec();
 
-  // 유저-지도의 logNumber 업데이트
+  // 유저-지도의 시간 업데이트
   for (const userMap of userMaps) {
-    await Data.update(
-      { PK: userMap.PK, SK: userMap.SK },
-      { $ADD: { views: 1 } }
-    );
+    await Data.update({ PK: userMap.PK, SK: userMap.SK });
   }
 
   // 푸시알림 보내기

@@ -23,6 +23,7 @@ exports.parseClass = function(doc) {
       obj = new this.Story(doc);
       break;
     case 'LOG':
+      doc.logId = types[1];
       obj = new this.Log(doc);
       break;
   }
@@ -88,17 +89,11 @@ exports.Map = class Map extends Data {
     // DB에서 가져온 경우 content가 존재
     if (!isUndefined(options.content)) {
       this.mid = options.PK;
-      this.logNumber = options.views;
     }
 
     // mid 기본값
     if (isUndefined(this.mid)) {
       this.mid = uuid();
-    }
-
-    // logNumber 기본값
-    if (isUndefined(this.logNumber)) {
-      this.logNumber = 0;
     }
 
     // represents 초기화
@@ -120,7 +115,6 @@ exports.Map = class Map extends Data {
       PK: this.mid,
       SK: 'INFO',
       types: 'MAP',
-      views: this.logNumber,
       content: {
         represents: this.represents,
         name: this.name,
@@ -137,17 +131,11 @@ exports.UserMap = class UserMap extends Data {
     if (!isUndefined(options.content)) {
       this.mid = options.PK;
       this.uid = options.SK;
-      this.logNumber = options.views;
     }
 
     // name 초기화
     if (isUndefined(this.name)) {
       this.name = '새 지도';
-    }
-
-    // viewedNumber 초기화
-    if (isUndefined(this.logNumber)) {
-      this.logNumber = 0;
     }
   }
 
@@ -156,7 +144,6 @@ exports.UserMap = class UserMap extends Data {
       PK: this.mid,
       SK: this.uid,
       types: 'USER-MAP',
-      views: this.logNumber,
       content: {
         name: this.name,
       },
@@ -204,7 +191,6 @@ exports.Log = class Log extends Data {
     if (!isUndefined(options.content)) {
       this.lid = options.PK;
       this.mid = options.SK;
-      this.logId = options.views;
     }
 
     // lid 기본값
@@ -218,7 +204,6 @@ exports.Log = class Log extends Data {
       PK: this.lid,
       SK: this.mid,
       types: `LOG.${numberPad(this.logId, 10)}`,
-      views: this.logId,
       content: {
         uid: this.uid,
         data: this.data,
