@@ -21,6 +21,9 @@ const Logger = require('./modules/logger');
 // Canvas 가져오기
 const { makeThumbnail } = require('./modules/canvas');
 
+// Firebase 가져오기
+const { deleteUser, deleteMap } = require('./modules/firebase');
+
 /**
  * Route: /users
  * Method: delete
@@ -73,16 +76,16 @@ module.exports.handler = async (ctx, context) => {
   // delete promise들을 queue에 담는다.
   for (let i = 0; i < maps.count; i++) {
     // 지도에 사람없는지 체크
-    const deleteMap = await Data.query('PK')
+    const deleteMaps = await Data.query('PK')
       .eq(maps[i].PK)
       .filter('types')
       .in(['MAP', 'USER-MAP'])
       .exec();
 
     // 지도에 사람 혼자 남았을 때
-    if (deleteMap.count <= 2) {
-      for (let i = 0; i < deleteMap.count; i++) {
-        deleteQueue.push(deleteMap[i]);
+    if (deleteMaps.count <= 2) {
+      for (let i = 0; i < deleteMaps.count; i++) {
+        deleteQueue.push(deleteMaps[i]);
       }
 
       // 스토리와 로그도 삭제
@@ -94,6 +97,9 @@ module.exports.handler = async (ctx, context) => {
       // 지도에 연결된 s3 폴더 삭제
       await deleteFolder(maps[i].PK);
 
+      // Realtime DB에 적용
+      await deleteMap(mid);
+
       // 스토리와 로그들을 deleteQueue에 넣는다.
       for (let i = 0; i < storyLogs.count; i++) {
         deleteQueue.push(storyLogs[i]);
@@ -103,14 +109,14 @@ module.exports.handler = async (ctx, context) => {
       deleteQueue.push(maps[i]);
 
       // 섬네일 제작
-      for (let i = 0; i < deleteMap.length; i++) {
-        if (deleteMap[i].types == 'MAP' || deleteMap[i].SK == uid) {
-          deleteMap.splice(i, 1);
+      for (let i = 0; i < deleteMaps.length; i++) {
+        if (deleteMaps[i].types == 'MAP' || deleteMaps[i].SK == uid) {
+          deleteMaps.splice(i, 1);
           i--;
           continue;
         }
       }
-      await makeThumbnail(maps[i].PK, deleteMap);
+      await makeThumbnail(maps[i].PK, deleteMaps);
 
       // 로그
       await Logger(ctx, maps[i].PK);
@@ -118,6 +124,9 @@ module.exports.handler = async (ctx, context) => {
   }
   // 전부 delete가 될때까지 대기
   await Promise.all(deleteQueue.map(q => q.delete()));
+
+  // Realtiem DB에 적용
+  await deleteUser(uid);
 
   return {
     statusCode: statusCode.processingSuccess,

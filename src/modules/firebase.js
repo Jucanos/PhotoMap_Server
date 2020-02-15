@@ -1,6 +1,10 @@
 // Firebase Admin 설정
 const admin = require('firebase-admin');
 
+// util 가져오기
+const { isUndefined } = require('./util');
+
+// init을 한번만 하도록 설정
 if (admin.apps.length == 0) {
   admin.initializeApp({
     credential: admin.credential.cert({
@@ -15,10 +19,14 @@ if (admin.apps.length == 0) {
       auth_provider_x509_cert_url: 'https://www.googleapis.com/oauth2/v1/certs',
       client_x509_cert_url: process.env.FIREBASE_CLIENT_CERT_URL,
     }),
-    databaseURL: 'https://photomap-ba430.firebaseio.com',
+    databaseURL: 'https://photomap-22e48.firebaseio.com/',
   });
 }
 
+// Realtime Database 가져오기
+const db = admin.database();
+
+// 푸시알림 보내기
 exports.sendPush = async (users, body = '본문') => {
   let condition = '';
   let message = {
@@ -57,4 +65,61 @@ exports.sendPush = async (users, body = '본문') => {
         console.log('Error sending message:', error);
       });
   }
+};
+
+// 원자성 증가
+exports.atomicCounter = async mid => {
+  // 지도의 reference 가져오기
+  const ref = db.ref(`maps/${mid}`);
+
+  // value를 1 원자성 증가
+  const result = await ref.transaction(current_value => {
+    return (current_value || 0) + 1;
+  });
+  console.log(result);
+
+  // 변경된 value를 반환
+  return result.snapshot.val();
+};
+
+// 사용자 추가시 viewd logNumber 초기화
+exports.enrollMap = async (uid, mid, value = 0) => {
+  // 사용자의 지도 reference 가져오기
+  const ref = db.ref(`users/${uid}/${mid}`);
+
+  await ref.set(value);
+};
+
+// 지도에서 사용자 나갈시 users/{uid}/{mid} 삭제
+exports.quitMap = async (uid, mid) => {
+  // 사용자의 지도 reference 가져오기
+  const ref = db.ref(`users/${uid}/${mid}`);
+
+  await ref.remove();
+};
+
+// 사용자 삭제시 users/{uid} 삭제
+exports.deleteUser = async uid => {
+  // 사용자의 지도 reference 가져오기
+  const ref = db.ref(`users/${uid}`);
+
+  await ref.remove();
+};
+
+// 지도 삭제시 maps/{mid} 삭제
+exports.deleteMap = async (mid, users) => {
+  // 사용자의 지도 reference 가져오기
+  const ref = db.ref(`maps/${mid}`);
+
+  if (!isUndefined(users)) {
+    console.log({ users });
+    for (const user of users) {
+      if (user.types == 'USER-MAP') {
+        const userRef = db.ref(`users/${user.SK}/${mid}`);
+        await userRef.remove();
+      }
+    }
+  }
+
+  await ref.remove();
 };

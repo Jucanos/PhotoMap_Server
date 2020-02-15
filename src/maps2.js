@@ -41,6 +41,9 @@ const Logger = require('./modules/logger');
 // Canvas 가져오기
 const { makeThumbnail } = require('./modules/canvas');
 
+// Firebase 가져오기
+const { deleteMap } = require('./modules/firebase');
+
 /**
  * Route: /maps/{mid}
  * Method: get, post, put, patch, delete
@@ -298,6 +301,9 @@ router.patch('/:id', bodyParser(), async ctx => {
       deleteQueue.push(storyLogs[i]);
     }
 
+    // Realtime DB에서 지도 삭제
+    await deleteMap(mid, [{ types: 'USER-MAP', SK: uid }]);
+
     // 삭제를 기다린다.
     await Promise.all(deleteQueue.map(q => q.delete()));
   }
@@ -436,6 +442,9 @@ router.delete('/:id', async ctx => {
 
   // s3 폴더 삭제
   await deleteFolder(mid);
+
+  // Realtime DB 적용
+  await deleteMap(mid, maps);
 
   createResponse(ctx, statusCode.processingSuccess, null);
 });
