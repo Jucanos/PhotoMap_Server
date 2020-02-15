@@ -32,10 +32,6 @@ const DataSchema = new Schema(
       type: String,
       required: true,
     },
-    // views
-    views: {
-      type: Number,
-    },
     // custom Object
     content: {
       type: Object,
