@@ -363,10 +363,10 @@ router.patch('/:id', bodyParser(), async ctx => {
 
     // 섬네일 제작
     await makeThumbnail(mid, maps);
-  }
 
-  // 로그
-  await Logger(ctx, mid);
+    // 로그
+    await Logger(ctx, mid);
+  }
 
   createResponse(ctx, statusCode.processingSuccess, null);
 });
