@@ -54,16 +54,8 @@ exports.sendPush = async (users, body = '본문') => {
     console.log('[FCM Push]', message);
 
     // 푸시알림 보내기
-    admin
-      .messaging()
-      .send(message)
-      .then(response => {
-        // Response is a message ID string.
-        console.log('Successfully sent message:', response);
-      })
-      .catch(error => {
-        console.log('Error sending message:', error);
-      });
+    const pushResult = await admin.messaging().send(message);
+    console.log(pushResult);
   }
 };
 
