@@ -1,6 +1,5 @@
 // Dynamoose 설정
-const Dynamoose = require('./dynamo_schema');
-const Data = Dynamoose.Data;
+const { Data } = require('./dynamo_schema');
 
 // DClass와 util 가져오기
 const DClass = require('./dynamo_class');
@@ -19,29 +18,38 @@ const cityString = {
 };
 
 // FCM 가져오기
-const { sendPush } = require('./fcm');
+const { sendPush, atomicCounter, enrollMap, quitMap } = require('./firebase');
 
 module.exports = async (ctx, mid, story = null) => {
+  // 데이터 가공
   const urlArray = ctx.request.url.split('/');
   const url = urlArray[1];
   const method = ctx.request.method;
 
+  // uid 가져오기
   const uid = getUid(ctx);
-
   console.log('[Log]', { url, method });
 
+  // user 정보 가져오기
   const user = await Data.queryOne('PK')
     .eq(uid)
     .exec();
-
   const userData = DClass.parseClass(user);
 
+  // logId 가져오기
+  const logId = await atomicCounter(mid);
+  console.log({ logId });
+
+  // url과 method로 로그메세지 가공
   let data = '';
   if (url == 'maps') {
     if (method == 'POST') {
       // POST
       if (urlArray.length == 2) {
         data = `${userData.nickname}님이 지도를 생성하셨습니다.`;
+
+        // Realtime DB에 적용
+        await enrollMap(uid, mid, logId);
       } else if (urlArray.length == 3) {
         data = `${userData.nickname}님이 ${
           cityString[story.cityKey]
@@ -49,11 +57,17 @@ module.exports = async (ctx, mid, story = null) => {
       }
     } else if (method == 'PATCH') {
       // PATCH
-      const remove = ctx.request.body.remove;
-      if (remove) {
+      const remove = ctx.request.body.remove || 'false';
+      if (remove == 'true') {
         data = `${userData.nickname}님이 지도에서 나갔습니다.`;
+
+        // Realtime DB에 적용
+        await quitMap(uid, mid);
       } else {
         data = `${userData.nickname}님이 지도에 초대되었습니다.`;
+
+        // Realtime DB에 적용
+        await enrollMap(uid, mid, logId);
       }
     }
   } else if (url == 'users') {
@@ -79,7 +93,6 @@ module.exports = async (ctx, mid, story = null) => {
       } 지역의 스토리「${story.title}」를 삭제했습니다.`;
     }
   }
-
   console.log({ uid, mid, data });
 
   // 로그 저장하기
@@ -87,22 +100,32 @@ module.exports = async (ctx, mid, story = null) => {
     uid,
     mid,
     data,
+    logId,
   });
   const newLog = new Data(logData.json());
   await newLog.save();
 
-  // 푸시알림 보내기
+  // mid에 연결된 유저-지도 가져오기
   const userMaps = await Data.query('PK')
     .eq(mid)
     .filter('types')
     .eq('USER-MAP')
     .exec();
+
+  // 유저-지도의 시간 업데이트
+  for (const userMap of userMaps) {
+    await Data.update({ PK: userMap.PK, SK: userMap.SK });
+  }
+
+  // 푸시알림 보내기
   for (let i = 0; i < userMaps.length; i++) {
+    // 자기 자신을 제외하고 보내기
     if (userMaps[i].SK == uid) {
       userMaps.splice(i, 1);
       break;
     }
   }
+  console.log({ userMaps });
   await sendPush(userMaps, data);
 };
 

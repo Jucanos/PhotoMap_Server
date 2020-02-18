@@ -49,3 +49,8 @@ exports.uuid = () => {
 };
 
 exports.getUid = ctx => ctx.req.requestContext.authorizer.principalId;
+
+exports.numberPad = (n, width) => {
+  n = n + '';
+  return n.length >= width ? n : new Array(width - n.length + 1).join('0') + n;
+};

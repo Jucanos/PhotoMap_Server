@@ -41,6 +41,9 @@ const Logger = require('./modules/logger');
 // Canvas 가져오기
 const { makeThumbnail } = require('./modules/canvas');
 
+// Firebase 가져오기
+const { deleteMap } = require('./modules/firebase');
+
 /**
  * Route: /maps/{mid}
  * Method: get, post, put, patch, delete
@@ -51,8 +54,13 @@ router.get('/:id', async ctx => {
   // 함수 호출위치 로그
   console.log(ctx.request.url, ctx.request.method);
 
+  // Auth에서 uid 가져오기
+  const uid = getUid(ctx);
+
   // 파라미터 가져오기
   const mid = ctx.params.id;
+  const primary = ctx.query.primary || 'false';
+  console.log('[Parameter]', { mid, primary });
 
   // 지도 정보 가져오기
   const maps = await Data.query('PK')
@@ -61,9 +69,22 @@ router.get('/:id', async ctx => {
     .in(['MAP', 'USER-MAP'])
     .exec();
 
+  // 지도가 존재하지 않을 때
   if (maps.count == 0) {
-    console.error('map is not exist');
-    return createResponse(ctx, statusCode.failure, null, 'map is not exist');
+    // 만약 대표지도인 경우
+    if (primary == 'true') {
+      // User의 primary값을 null로 만들고 null을 return한다.
+      await Data.update(
+        { PK: uid, SK: 'INFO' },
+        { content: { primary: null } }
+      );
+      return createResponse(ctx, statusCode.success, null);
+    }
+    // 만약 대표지도가 아닌경우 오류반환
+    else {
+      console.error('map is not exist');
+      return createResponse(ctx, statusCode.failure, null, 'map is not exist');
+    }
   }
 
   // 지도정보와 사용자 정보 분리
@@ -89,17 +110,9 @@ router.get('/:id', async ctx => {
     let user = DClass.parseClass(owners[i]);
     delete user.createdAt;
     delete user.updatedAt;
+    delete user.primary;
     data.owners.push(user);
   }
-
-  // TODO: 스토리와 로그 완성 후 가져오는거 추가
-  // 다른 정보 가져오기
-  // const contents = await Data.query('SK')
-  //   .using('GSI')
-  //   .eq(mid)
-  //   .exec();
-
-  // console.log(contents);
 
   createResponse(ctx, statusCode.success, data);
 });
@@ -112,18 +125,21 @@ router.post('/:id', upload.single('img'), async ctx => {
   // 파라미터 가져오기
   const mid = ctx.params.id;
   const cityKey = ctx.request.body.cityKey;
+  const remove = ctx.request.body.remove || 'false';
   const file = ctx.file;
   console.log('[Parameter]', { mid, cityKey, file });
 
   // file 존재여부 확인
-  if (isUndefined(file)) {
+  if (remove == 'false' && isUndefined(file)) {
     console.error('file is undefined');
     return createResponse(ctx, statusCode.failure, null, 'file is undefined');
   }
 
   // cityKey 존재여부 확인
   if (isUndefined(cityKey)) {
-    deleteObject(file.key);
+    if (remove == 'false') {
+      await deleteObject(file.key);
+    }
 
     console.error('cityKey is undefined');
     return createResponse(
@@ -136,12 +152,15 @@ router.post('/:id', upload.single('img'), async ctx => {
 
   // cityKey가 valid한지 확인
   if (representsDefault.indexOf(cityKey) == -1) {
-    deleteObject(file.key);
+    if (remove == 'false') {
+      await deleteObject(file.key);
+    }
 
     console.error('cityKey is invalid');
     return createResponse(ctx, statusCode.failure, null, 'cityKey is invalid');
   }
 
+  // 지도 가져오기
   const map = await Data.queryOne('PK')
     .eq(mid)
     .where('SK')
@@ -152,7 +171,9 @@ router.post('/:id', upload.single('img'), async ctx => {
 
   // 지도가 존재하는지 확인
   if (isUndefined(map)) {
-    deleteObject(file.key);
+    if (remove == 'false') {
+      await deleteObject(file.key);
+    }
 
     console.error('map is not exist');
     return createResponse(ctx, statusCode.failure, null, 'map is not exist');
@@ -163,11 +184,15 @@ router.post('/:id', upload.single('img'), async ctx => {
   // 이전 이미지 삭제
   const beforeImg = mapData.represents[cityKey];
   if (beforeImg != null) {
-    deleteObject(beforeImg);
+    await deleteObject(beforeImg);
   }
 
   // 현재 지도데이터 업데이트
-  mapData.represents[cityKey] = process.env.S3_CUSTOM_DOMAIN + file.key;
+  if (remove == 'true') {
+    mapData.represents[cityKey] = null;
+  } else {
+    mapData.represents[cityKey] = process.env.S3_CUSTOM_DOMAIN + file.key;
+  }
   await Data.update(mapData.json());
 
   // 로그
@@ -181,7 +206,7 @@ router.put('/:id', bodyParser(), async ctx => {
   // 함수 호출위치 로그
   console.log(ctx.request.url, ctx.request.method);
 
-  // JWT에서 uid 가져오기
+  // Auth에서 uid 가져오기
   const uid = getUid(ctx);
 
   // 파라미터 가져오기
@@ -189,6 +214,7 @@ router.put('/:id', bodyParser(), async ctx => {
   const name = ctx.request.body.name;
   console.log('[Parameter]', { mid, name });
 
+  // name이 있는지 확인
   if (isUndefined(name)) {
     console.error('name is required');
     return createResponse(
@@ -208,6 +234,7 @@ router.put('/:id', bodyParser(), async ctx => {
     .eq('USER-MAP')
     .exec();
 
+  // 유저-지도가 없다면 오류
   if (isUndefined(userMap)) {
     console.error('userMap is not exist');
     return createResponse(
@@ -231,7 +258,7 @@ router.patch('/:id', bodyParser(), async ctx => {
   // 함수 호출위치 로그
   console.log(ctx.request.url, ctx.request.method);
 
-  // JWT에서 uid 가져오기
+  // Auth에서 uid 가져오기
   const uid = getUid(ctx);
 
   // 파라미터 가져오기
@@ -245,9 +272,9 @@ router.patch('/:id', bodyParser(), async ctx => {
     .filter('types')
     .in(['MAP', 'USER-MAP'])
     .exec();
-
   console.log({ maps });
 
+  // 지도가 존재하지 않으면 오류
   if (maps.count == 0) {
     console.error('map is not exist');
     return createResponse(ctx, statusCode.failure, null, 'map is not exist');
@@ -267,20 +294,31 @@ router.patch('/:id', bodyParser(), async ctx => {
       .exec();
 
     // 지도 삭제시 연결된 S3의 지도폴더도 삭제 필요
-    deleteFolder(mid);
+    await deleteFolder(mid);
 
+    // 스토리와 로그들을 deleteQueue에 넣는다.
     for (let i = 0; i < storyLogs.count; i++) {
       deleteQueue.push(storyLogs[i]);
     }
 
+    // Realtime DB에서 지도 삭제
+    await deleteMap(mid, [{ types: 'USER-MAP', SK: uid }]);
+
     // 삭제를 기다린다.
     await Promise.all(deleteQueue.map(q => q.delete()));
-  } else {
+  }
+  // 지도에 사람이 남아있는 경우
+  else {
+    // 변수 초기화
     let name = '새 지도';
+
+    // 지도와 유저-지도를 돌며 체크
     for (let i = 0; i < maps.count; i++) {
+      // 지도의 경우 name 가져오기
       if (maps[i].types == 'MAP') {
         name = maps[i].content.name;
       }
+      // 유저-지도이고 사용자 추가인경우 이미 등록되있으면 오류
       if (maps[i].types == 'USER-MAP' && remove == 'false') {
         if (uid == maps[i].SK) {
           console.error('you already enrolled in this map');
@@ -315,6 +353,7 @@ router.patch('/:id', bodyParser(), async ctx => {
     if (remove == 'true') {
       await newUserMap.delete();
 
+      // 섬네일 만들 유저-지도 제작
       for (const i in maps) {
         if (maps[i].SK == uid) {
           maps.splice(i, 1);
@@ -322,7 +361,7 @@ router.patch('/:id', bodyParser(), async ctx => {
         }
       }
     }
-    //사용자 추가
+    // 사용자 추가
     else {
       await newUserMap.save();
       maps.push(newUserMap);
@@ -330,10 +369,10 @@ router.patch('/:id', bodyParser(), async ctx => {
 
     // 섬네일 제작
     await makeThumbnail(mid, maps);
-  }
 
-  // 로그
-  await Logger(ctx, mid);
+    // 로그
+    await Logger(ctx, mid);
+  }
 
   createResponse(ctx, statusCode.processingSuccess, null);
 });
@@ -343,7 +382,7 @@ router.delete('/:id', async ctx => {
   // 함수 호출위치 로그
   console.log(ctx.request.url, ctx.request.method);
 
-  // JWT에서 uid 가져오기
+  // Auth에서 uid 가져오기
   const uid = getUid(ctx);
 
   // 파라미터 가져오기
@@ -403,6 +442,9 @@ router.delete('/:id', async ctx => {
 
   // s3 폴더 삭제
   await deleteFolder(mid);
+
+  // Realtime DB 적용
+  await deleteMap(mid, maps);
 
   createResponse(ctx, statusCode.processingSuccess, null);
 });

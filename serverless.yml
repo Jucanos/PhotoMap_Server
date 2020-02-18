@@ -168,6 +168,14 @@ functions:
           path: /users
           method: delete
           authorizer: authorize
+  User:
+    handler: src/users.handler
+    tracing: true
+    events:
+      - http:
+          path: /users/{ANY+}
+          method: patch
+          authorizer: authorize
   # 지도 관련 함수
   Map1:
     handler: src/maps1.handler

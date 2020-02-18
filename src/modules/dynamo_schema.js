@@ -32,6 +32,7 @@ const DataSchema = new Schema(
       type: String,
       required: true,
     },
+    // custom Object
     content: {
       type: Object,
       default: {},

@@ -23,7 +23,7 @@ const { Data } = require('./modules/dynamo_schema');
 
 // DClass와 util 가져오기
 const DClass = require('./modules/dynamo_class');
-const { statusCode, createResponse } = require('./modules/util');
+const { statusCode, createResponse, numberPad } = require('./modules/util');
 
 /**
  * Route: /logs
@@ -37,27 +37,29 @@ router.get('/:id', async ctx => {
 
   // 파라미터 가져오기
   const mid = ctx.params.id;
-  const createdAt = ctx.params.createdAt || '3000-01-01T01:00:00.000Z';
-  console.log('[Parameter]', { mid, createdAt });
+  //const createdAt = ctx.query.createdAt || '3000-01-01T01:00:00.000Z';
+  const logId = ctx.query.logId || '9999999999';
+  console.log('[Parameter]', { mid, logId });
 
   // 로그 가져오기
   const logs = await Data.query('SK')
     .using('GSI')
     .eq(mid)
     .where('types')
-    .beginsWith('LOG')
+    .lt(`LOG.${numberPad(logId, 10)}`)
     .descending()
     .limit(100)
-    .filter('createdAt')
-    .lt(createdAt)
     .exec();
+  console.log({ logs });
 
   // 반환값 가공하기
   let data = [];
 
   for (let i = 0; i < logs.count; i++) {
     data.push(DClass.parseClass(logs[i]));
-    delete data[i].now;
+    delete data[i].lid;
+    delete data[i].mid;
+    delete data[i].updatedAt;
   }
 
   createResponse(ctx, statusCode.success, data);

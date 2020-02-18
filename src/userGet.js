@@ -17,14 +17,16 @@ const { paths, kakaoRequest } = require('./modules/kakao');
 
 /**
  * Route: /users
- * Method: get, delete
+ * Method: get
  */
 
 /* 유저 정보 가져오기 */
 module.exports.handler = async (ctx, context) => {
+  // lambda handler 기본 환경설정
   context.basePath = process.env.BASE_PATH;
   context.callbackWaitsForEmptyEventLoop = false;
 
+  // router 삭제로 인한 변수 이동
   ctx.request = {
     header: {
       authorization: ctx.headers.Authorization,
@@ -70,6 +72,7 @@ module.exports.handler = async (ctx, context) => {
   // user가 존재하면 회원정보 반환
   else {
     let userDB = DClass.parseClass(user);
+    userData.primary = userDB.primary;
 
     // nickname과 thumbnail중 하나라도 다르면
     if (!userData.equal(userDB)) {

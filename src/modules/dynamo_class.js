@@ -1,4 +1,4 @@
-const { representsDefault, isUndefined, uuid } = require('./util');
+const { representsDefault, isUndefined, uuid, numberPad } = require('./util');
 
 exports.parseClass = function(doc) {
   doc = doc.originalItem();
@@ -23,7 +23,7 @@ exports.parseClass = function(doc) {
       obj = new this.Story(doc);
       break;
     case 'LOG':
-      doc.now = types[1];
+      doc.logId = types[1];
       obj = new this.Log(doc);
       break;
   }
@@ -57,6 +57,11 @@ exports.User = class User extends Data {
     if (!isUndefined(options.content)) {
       this.uid = options.PK;
     }
+
+    // primary 초기화
+    if (isUndefined(this.primary)) {
+      this.primary = null;
+    }
   }
 
   json() {
@@ -67,6 +72,7 @@ exports.User = class User extends Data {
       content: {
         nickname: this.nickname,
         thumbnail: this.thumbnail,
+        primary: this.primary,
       },
     };
   }
@@ -185,17 +191,11 @@ exports.Log = class Log extends Data {
     if (!isUndefined(options.content)) {
       this.lid = options.PK;
       this.mid = options.SK;
-      this.now = options.now;
     }
 
     // lid 기본값
     if (isUndefined(this.sid)) {
       this.lid = uuid();
-    }
-
-    // lid 기본값
-    if (isUndefined(this.now)) {
-      this.now = Date.now();
     }
   }
 
@@ -203,7 +203,7 @@ exports.Log = class Log extends Data {
     return {
       PK: this.lid,
       SK: this.mid,
-      types: `LOG.${this.now}`,
+      types: `LOG.${numberPad(this.logId, 10)}`,
       content: {
         uid: this.uid,
         data: this.data,

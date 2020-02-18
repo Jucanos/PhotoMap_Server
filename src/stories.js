@@ -48,7 +48,7 @@ router.post('/:id', upload.array('img', 5), async ctx => {
   // 함수 호출위치 로그
   console.log(ctx.request.url, ctx.request.method);
 
-  // JWT에서 uid 가져오기
+  // Auth에서 uid 가져오기
   const uid = getUid(ctx);
 
   // 파라미터 가져오기
@@ -177,6 +177,7 @@ router.get('/:id', async ctx => {
   // 함수 호출위치 로그
   console.log(ctx.request.url, ctx.request.method);
 
+  // 파라미터 가져오기
   const sid = ctx.params.id;
 
   // sid로 스토리 가져오기
@@ -243,7 +244,7 @@ router.delete('/:id', async ctx => {
   // 함수 호출위치 로그
   console.log(ctx.request.url, ctx.request.method);
 
-  // JWT에서 uid 가져오기
+  // Auth에서 uid 가져오기
   const uid = getUid(ctx);
 
   // 파라미터 가져오기
