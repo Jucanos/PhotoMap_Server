@@ -69,6 +69,7 @@ provider:
   runtime: nodejs10.x
   stage: ${env:STAGE}
   region: ap-northeast-2
+  timeout: 60
   tracing:
     apiGateway: true
     lambda: true
