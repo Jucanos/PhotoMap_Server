@@ -98,7 +98,7 @@ module.exports.handler = async (ctx, context) => {
       await deleteFolder(maps[i].PK);
 
       // Realtime DB에 적용
-      await deleteMap(mid);
+      await deleteMap(maps[i].PK);
 
       // 스토리와 로그들을 deleteQueue에 넣는다.
       for (let i = 0; i < storyLogs.count; i++) {
