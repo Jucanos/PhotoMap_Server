@@ -95,16 +95,6 @@ module.exports = async (ctx, mid, story = null) => {
   }
   console.log({ uid, mid, data });
 
-  // 로그 저장하기
-  const logData = new DClass.Log({
-    uid,
-    mid,
-    data,
-    logId,
-  });
-  const newLog = new Data(logData.json());
-  await newLog.save();
-
   // mid에 연결된 유저-지도 가져오기
   const userMaps = await Data.query('PK')
     .eq(mid)

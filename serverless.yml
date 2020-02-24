@@ -220,16 +220,6 @@ functions:
           method: ANY
           authorizer: authorize
           cors: true
-  # 로그 관련 함수
-  Log:
-    handler: src/logs.handler
-    tracing: true
-    events:
-      - http:
-          path: /logs/{any+}
-          method: GET
-          authorizer: authorize
-          cors: true
   # 공지 관련 함수
   Notice:
     handler: src/notice.handler
