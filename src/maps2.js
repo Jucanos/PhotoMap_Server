@@ -39,7 +39,7 @@ const {
 const Logger = require('./modules/logger');
 
 // Canvas 가져오기
-const { makeThumbnail } = require('./modules/canvas');
+const { makeThumbnail, capture } = require('./modules/canvas');
 
 // Firebase 가져오기
 const { deleteMap } = require('./modules/firebase');
@@ -445,6 +445,50 @@ router.delete('/:id', async ctx => {
 
   // Realtime DB 적용
   await deleteMap(mid, maps);
+
+  createResponse(ctx, statusCode.processingSuccess, null);
+});
+
+/**
+ * Route: /maps/{mid}/represents
+ * Method: get
+ */
+
+/* 지도 캡처 */
+router.get('/:id/represents', async ctx => {
+  // 함수 호출위치 로그
+  console.log(ctx.request.url, ctx.request.method);
+
+  // Auth에서 uid 가져오기
+  const uid = getUid(ctx);
+
+  // 파라미터 가져오기
+  const mid = ctx.params.id;
+
+  // mid에 해당하는 map의 count
+  const map = await Data.queryOne('PK')
+    .eq(mid)
+    .where('SK')
+    .eq('INFO')
+    .filter('types')
+    .eq('MAP')
+    .exec();
+
+  // DB에 mid에 해당하는 지도가 없음
+  if (isUndefined(map)) {
+    console.error('this map is not exist');
+    return createResponse(
+      ctx,
+      statusCode.failure,
+      null,
+      'this map is not exist'
+    );
+  }
+
+  const mapData = DClass.parseClass(map);
+  console.log({ mapData });
+
+  await capture(mid, mapData.represents);
 
   createResponse(ctx, statusCode.processingSuccess, null);
 });
