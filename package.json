@@ -17,11 +17,11 @@
   },
   "homepage": "https://github.com/RunaticMoon/PhotoMap_Server#readme",
   "devDependencies": {
-    "@babel/cli": "^7.8.3",
-    "@babel/core": "^7.8.3",
+    "@babel/cli": "^7.8.4",
+    "@babel/core": "^7.8.4",
     "@babel/plugin-transform-modules-commonjs": "^7.8.3",
-    "@babel/preset-env": "^7.8.3",
-    "aws-sdk": "^2.610.0",
+    "@babel/preset-env": "^7.8.4",
+    "aws-sdk": "^2.625.0",
     "babel-jest": "^24.9.0",
     "babel-loader": "^8.0.6",
     "babel-plugin-source-map-support": "^2.1.1",
@@ -32,17 +32,17 @@
     "prettier": "^1.19.1",
     "serverless-apigw-binary": "^0.4.4",
     "serverless-domain-manager": "^3.3.1",
-    "serverless-dotenv-plugin": "^2.1.1",
+    "serverless-dotenv-plugin": "^2.3.2",
     "serverless-dynamodb-local": "^0.2.39",
     "serverless-offline": "^5.12.1",
     "serverless-plugin-tracing": "^2.0.0",
     "serverless-webpack": "^5.3.1",
-    "webpack": "^4.41.5",
+    "webpack": "^4.41.6",
     "webpack-node-externals": "^1.7.2"
   },
   "dependencies": {
     "@koa/multer": "^2.0.2",
-    "@koa/router": "^8.0.6",
+    "@koa/router": "^8.0.8",
     "aws-xray-sdk": "^2.5.0",
     "dotenv": "^8.2.0",
     "dynamoose": "^1.11.1",
@@ -52,10 +52,10 @@
     "konva-node": "^0.11.1",
     "multer": "^1.4.2",
     "multer-s3": "^2.9.0",
-    "request": "^2.88.0",
+    "request": "^2.88.2",
     "request-promise-native": "^1.0.8",
     "serverless-http": "^2.3.1",
     "source-map-support": "^0.5.16",
-    "uuid": "^3.4.0"
+    "uuidv4": "^6.0.3"
   }
 }
