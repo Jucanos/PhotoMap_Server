@@ -1,19 +1,44 @@
 // Canvas 설정
 const { createCanvas, loadImage } = require('canvas');
-const canvasThumbnail = createCanvas(200, 200);
-const ctxt = canvasThumbnail.getContext('2d');
-const canvasMap = createCanvas(1000, 1064);
-const ctxm = canvasMap.getContext('2d');
+const canvas = createCanvas(200, 200);
+const ctx = canvas.getContext('2d');
 
 // Google polyfill 설정
 require('canvas-5-polyfill');
+
+// Konva 설정
+const Konva = require('konva-node');
+const stage = new Konva.Stage({
+  width: 1000,
+  height: 1064,
+});
+const backgroundLayer = new Konva.Layer();
+const backgroundRect = new Konva.Rect({
+  x: 0,
+  y: 0,
+  width: stage.width(),
+  height: stage.height(),
+  fill: 'white',
+});
+backgroundLayer.add(backgroundRect);
+stage.add(backgroundLayer);
+
+const layer = new Konva.Layer();
+stage.add(layer);
 
 // Dynamoose 설정
 const Dynamoose = require('./dynamo_schema');
 const Data = Dynamoose.Data;
 
 // s3 가져오기
-const { putObject } = require('./s3_util');
+const { putObject, fileExist, fileURL, deleteFolder } = require('./s3_util');
+
+// crypto 가져오기
+const crypto = require('crypto');
+
+function base64url_encode(str) {
+  return str.replace(/\+/gi, '-').replace(/\//gi, '_');
+}
 
 exports.makeThumbnail = async (mid, users) => {
   // 캔버스 지우기
@@ -69,37 +94,65 @@ exports.makeThumbnail = async (mid, users) => {
   }
 
   // 이미지를 png로 저장
-  await putObject(mid, canvasThumbnail.toBuffer('image/png'));
+  await putObject(mid, canvas.toBuffer('image/png'));
 };
 
 exports.capture = async (mid, represents) => {
-  clearCanvas(canvasMap, ctxm);
   console.log({ represents });
 
-  ctxm.strokeStyle = 'white';
-  ctxm.lineWidth = 2.5;
-  ctxm.shadowColor = 'black';
-  ctxm.shadowBlur = 5;
-
   const cityKeys = Object.keys(represents);
-  for (let cityKey of cityKeys) {
-    console.log(cityKey);
+  const images = {};
 
-    if (cityKey === 'jeju')
-      drawPath(representsSVG[cityKey], -85.2888, -997.914);
-    else drawPath(representsSVG[cityKey]);
+  const hashKey =
+    'capture/' +
+    base64url_encode(
+      crypto
+        .createHash('sha256')
+        .update(JSON.stringify(represents))
+        .digest('base64')
+    );
+  console.log({ hashKey });
+
+  const fileCheck = await fileExist(mid, hashKey);
+  console.log({ fileCheck });
+
+  if (!fileCheck) {
+    await deleteFolder(`${mid}/capture`);
+
+    for (let cityKey of cityKeys) {
+      console.log(represents[cityKey]);
+      if (represents[cityKey] == null) images[cityKey] = null;
+      else images[cityKey] = await loadImage(represents[cityKey]);
+    }
+    console.log(images);
+
+    for (let cityKey of cityKeys) {
+      console.log(cityKey);
+
+      if (cityKey === 'jeju')
+        drawPath(cityKey, images[cityKey], -85.2888, -997.914);
+      else drawPath(cityKey, images[cityKey]);
+    }
+    stage.draw();
+
+    // 이미지를 png로 저장
+    const img = stage.toDataURL();
+    const buf = new Buffer(
+      img.replace(/^data:image\/\w+;base64,/, ''),
+      'base64'
+    );
+    await putObject(mid, buf, hashKey);
   }
 
-  // 이미지를 png로 저장
-  await putObject(mid, canvasMap.toBuffer('image/png'));
+  return fileURL(mid, hashKey);
 };
 
-const clearCanvas = (canvas = canvasThumbnail, ctx = ctxt) => {
+const clearCanvas = () => {
   ctx.clearRect(0, 0, canvas.width, canvas.height);
   ctx.beginPath();
 };
 
-function drawRoundedImage(img, x, y, width, height, radius, ctx = ctxt) {
+function drawRoundedImage(img, x, y, width, height, radius) {
   ctx.save();
   roundedImage(x, y, width, height, radius);
   ctx.strokeStyle = 'white';
@@ -110,7 +163,7 @@ function drawRoundedImage(img, x, y, width, height, radius, ctx = ctxt) {
   ctx.restore();
 }
 
-function roundedImage(x, y, width, height, radius, ctx = ctxt) {
+function roundedImage(x, y, width, height, radius) {
   ctx.beginPath();
   ctx.moveTo(x + radius, y);
   ctx.lineTo(x + width - radius, y);
@@ -124,24 +177,47 @@ function roundedImage(x, y, width, height, radius, ctx = ctxt) {
   ctx.closePath();
 }
 
-function drawPath(path, x = 0, y = 0, ctx = ctxm) {
+function drawPath(cityKey, image = null, x = 0, y = 0) {
   console.log({ x, y });
-  const pathData = new Path2D(path);
-  const pathTransform = new Path2D();
-  pathTransform.addPath(pathData, transform(x, y));
-  ctx.stroke(pathTransform);
+  const path = representsSVG[cityKey];
+  const pathData = new Konva.Path({
+    stroke: 'white',
+    strokeWidth: 5,
+    shadowColor: 'black',
+    shadowBlur: 20,
+    shadowOpacity: 0.5,
+    data: path,
+    x,
+    y,
+  });
+  if (image != null) {
+    pathData.fillPatternImage(image);
+    pathData.fillPatternRepeat('no-repeat');
+    var scaleX = imageOffset[cityKey].width / image.width;
+    var scaleY = imageOffset[cityKey].height / image.height;
+    pathData.fillPatternOffset({
+      x: (-1 * (imageOffset[cityKey].x - pathData.x())) / scaleX,
+      y: (-1 * (imageOffset[cityKey].y - pathData.y())) / scaleY,
+    });
+    pathData.fillPatternScale({
+      x: scaleX,
+      y: scaleY,
+    });
+  }
+  layer.add(pathData);
 }
 
-function transform(x = 0, y = 0) {
-  return {
-    a: 1,
-    b: 0,
-    c: 0,
-    d: 1,
-    e: x,
-    f: y,
-  };
-}
+const imageOffset = Object.freeze({
+  chungbuk: { x: 385.9, y: 265.9, width: 280, height: 280 },
+  chungnam: { x: 223.65, y: 291.55, width: 270, height: 260 },
+  gangwon: { x: 356.65, y: -12.75, width: 430, height: 430 },
+  gyeongbuk: { x: 475.7, y: 281.8, width: 340, height: 360 },
+  gyeonggi: { x: 282.25, y: 67.35, width: 250, height: 300 },
+  gyeongnam: { x: 487.35, y: 517.7, width: 350, height: 260 },
+  jeju: { x: 310.105, y: 814.295, width: 360, height: 240 },
+  jeonbuk: { x: 260.3, y: 461.2, width: 290, height: 240 },
+  jeonnam: { x: 233.3, y: 606.6, width: 300, height: 270 },
+});
 
 const representsSVG = Object.freeze({
   gyeonggi:

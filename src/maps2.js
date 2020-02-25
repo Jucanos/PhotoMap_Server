@@ -488,9 +488,9 @@ router.get('/:id/represents', async ctx => {
   const mapData = DClass.parseClass(map);
   console.log({ mapData });
 
-  await capture(mid, mapData.represents);
+  const fileURL = await capture(mid, mapData.represents);
 
-  createResponse(ctx, statusCode.processingSuccess, null);
+  createResponse(ctx, statusCode.success, fileURL);
 });
 
 // Lambda로 내보내기
