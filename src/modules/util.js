@@ -2,7 +2,7 @@
 require('dotenv').config();
 
 // uuid 가져오기
-const uuid4 = require('uuid/v4');
+const uuidv4 = require('uuid/v4');
 
 exports.isUndefined = obj => {
   if (typeof obj === 'undefined' && !obj) {
@@ -46,7 +46,7 @@ exports.representsDefault = [
 ];
 
 exports.uuid = () => {
-  const tokens = uuid4().split('-');
+  const tokens = uuidv4().split('-');
   return tokens[2] + tokens[1] + tokens[0] + tokens[3] + tokens[4];
 };
 

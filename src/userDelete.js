@@ -18,8 +18,8 @@ const { statusCode, getUid } = require('./modules/util');
 // Logger 가져오기
 const Logger = require('./modules/logger');
 
-// Canvas 가져오기
-const { makeThumbnail } = require('./modules/canvas');
+// Lambda invoke 가져오기
+const { makeThumbnail } = require('./modules/lambda');
 
 // Firebase 가져오기
 const { deleteUser, deleteMap } = require('./modules/firebase');

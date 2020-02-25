@@ -1,147 +1,164 @@
-// Canvas 설정
-const { createCanvas, loadImage } = require('canvas');
-const canvasThumbnail = createCanvas(200, 200);
-const ctxt = canvasThumbnail.getContext('2d');
-const canvasMap = createCanvas(1000, 1064);
-const ctxm = canvasMap.getContext('2d');
+// dotenv fetch
+require('dotenv').config();
 
-// Google polyfill 설정
-require('canvas-5-polyfill');
+// canvas 설정
+const { loadImage } = require('canvas');
 
-// Dynamoose 설정
-const Dynamoose = require('./dynamo_schema');
-const Data = Dynamoose.Data;
+// Konva 설정
+const Konva = require('konva-node');
+const stage = new Konva.Stage({
+  width: 1000,
+  height: 1064,
+});
+
+// 배경 설정
+const backgroundLayer = new Konva.Layer();
+const backgroundRect = new Konva.Rect({
+  x: 0,
+  y: 0,
+  width: stage.width(),
+  height: stage.height(),
+  fill: 'white',
+});
+backgroundLayer.add(backgroundRect);
+stage.add(backgroundLayer);
+
+// 객체 레이어 설정
+const layer = new Konva.Layer();
+stage.add(layer);
 
 // s3 가져오기
-const { putObject } = require('./s3_util');
+const {
+  putObject,
+  fileExist,
+  fileURL,
+  deleteFolder,
+} = require('./modules/s3_util');
 
-exports.makeThumbnail = async (mid, users) => {
-  // 캔버스 지우기
-  clearCanvas();
-  console.log('[makeThumbnail]', { users });
+// crypto 가져오기
+const crypto = require('crypto');
 
-  // 유저-지도에서 필요한 정보 추출
-  let userModels = [];
-  for (let i = 0; i < users.length; i++) {
-    console.log(users[i]);
-    userModels.push({
-      PK: users[i].SK,
-      SK: 'INFO',
+// util 가져오기
+const { statusCode } = require('./modules/util');
+
+/* 지도 캡처본 만들기 */
+module.exports.handler = async (ctx, context) => {
+  // lambda handler 기본 환경설정
+  context.basePath = process.env.BASE_PATH;
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  // 파라미터 가져오기
+  const mid = ctx.mid;
+  const represents = ctx.represents;
+  console.log({ mid, represents });
+
+  // 변수 선언
+  const cityKeys = Object.keys(represents);
+  const images = {};
+
+  // 대표사진 객체에서 해쉬키를 뽑아낸다.
+  const hashKey =
+    'capture/' +
+    base64url_encode(
+      crypto
+        .createHash('sha256')
+        .update(JSON.stringify(represents))
+        .digest('base64')
+    );
+  console.log({ hashKey });
+
+  // 해쉬키가 동일한지 체크
+  const fileCheck = await fileExist(mid, hashKey);
+  console.log({ fileCheck });
+
+  // 객체의 일부가 변경되었다면
+  if (!fileCheck) {
+    // 이전의 캡처본을 삭제
+    await deleteFolder(`${mid}/capture`);
+    layer.destroyChildren();
+
+    // 이미지들을 로드
+    for (let cityKey of cityKeys) {
+      console.log(represents[cityKey]);
+      if (represents[cityKey] == null) images[cityKey] = null;
+      else images[cityKey] = await loadImage(represents[cityKey]);
+    }
+    console.log(images);
+
+    // stage에 path들을 그린다.
+    for (let cityKey of cityKeys) {
+      console.log(cityKey);
+
+      if (cityKey === 'jeju')
+        drawPath(cityKey, images[cityKey], -85.2888, -997.914);
+      else drawPath(cityKey, images[cityKey]);
+    }
+    stage.draw();
+
+    // 이미지를 png로 저장
+    const img = stage.toDataURL();
+    const buf = Buffer.from(
+      img.replace(/^data:image\/\w+;base64,/, ''),
+      'base64'
+    );
+
+    // s3에 저장
+    await putObject(mid, buf, hashKey);
+  }
+
+  return {
+    statusCode: statusCode.success,
+    body: fileURL(mid, hashKey),
+  };
+};
+
+// base64에서 /를 삭제
+function base64url_encode(str) {
+  return str.replace(/\+/gi, '-').replace(/\//gi, '_');
+}
+
+// stage에 path 그리기
+function drawPath(cityKey, image = null, x = 0, y = 0) {
+  console.log({ x, y });
+  const path = representsSVG[cityKey];
+  const pathData = new Konva.Path({
+    stroke: 'white',
+    strokeWidth: 5,
+    shadowColor: 'black',
+    shadowBlur: 20,
+    shadowOpacity: 0.5,
+    data: path,
+    x,
+    y,
+  });
+  if (image != null) {
+    pathData.fillPatternImage(image);
+    pathData.fillPatternRepeat('no-repeat');
+    var scaleX = imageOffset[cityKey].width / image.width;
+    var scaleY = imageOffset[cityKey].height / image.height;
+    pathData.fillPatternOffset({
+      x: (-1 * (imageOffset[cityKey].x - pathData.x())) / scaleX,
+      y: (-1 * (imageOffset[cityKey].y - pathData.y())) / scaleY,
+    });
+    pathData.fillPatternScale({
+      x: scaleX,
+      y: scaleY,
     });
   }
-  console.log('[makeThumbnail]', { userModels });
-
-  // 각 유저의 정보를 다 가져오기
-  const userData = await Data.batchGet(userModels);
-  console.log('[makeThumbnail]', { userData });
-
-  // 최대 4개의 이미지 로드하기
-  let images = [];
-  for (const i in userData) {
-    if (i == 4) break;
-    const thumbnail = userData[i].content.thumbnail;
-    images.push(await loadImage(thumbnail));
-  }
-  console.log('[makeThumbnail]', { images });
-
-  // 이미지 개수에 따라서 다른 이미지 생성
-  // 1개
-  if (images.length == 1) {
-    drawRoundedImage(images[0], 5, 5, 190, 190, 70);
-  }
-  // 2개
-  else if (images.length == 2) {
-    drawRoundedImage(images[0], 5, 5, 120, 120, 60);
-    drawRoundedImage(images[1], 75, 75, 120, 120, 60);
-  }
-  // 3개
-  else if (images.length == 3) {
-    drawRoundedImage(images[0], 50, 5, 105, 105, 50);
-    drawRoundedImage(images[1], 5, 90, 105, 105, 50);
-    drawRoundedImage(images[2], 90, 90, 105, 105, 50);
-  }
-  // 4개
-  else {
-    drawRoundedImage(images[0], 5, 5, 90, 90, 40);
-    drawRoundedImage(images[1], 100, 5, 90, 90, 40);
-    drawRoundedImage(images[2], 5, 100, 90, 90, 40);
-    drawRoundedImage(images[3], 100, 100, 90, 90, 40);
-  }
-
-  // 이미지를 png로 저장
-  await putObject(mid, canvasThumbnail.toBuffer('image/png'));
-};
-
-exports.capture = async (mid, represents) => {
-  clearCanvas(canvasMap, ctxm);
-  console.log({ represents });
-
-  ctxm.strokeStyle = 'white';
-  ctxm.lineWidth = 2.5;
-  ctxm.shadowColor = 'black';
-  ctxm.shadowBlur = 5;
-
-  const cityKeys = Object.keys(represents);
-  for (let cityKey of cityKeys) {
-    console.log(cityKey);
-
-    if (cityKey === 'jeju')
-      drawPath(representsSVG[cityKey], -85.2888, -997.914);
-    else drawPath(representsSVG[cityKey]);
-  }
-
-  // 이미지를 png로 저장
-  await putObject(mid, canvasMap.toBuffer('image/png'));
-};
-
-const clearCanvas = (canvas = canvasThumbnail, ctx = ctxt) => {
-  ctx.clearRect(0, 0, canvas.width, canvas.height);
-  ctx.beginPath();
-};
-
-function drawRoundedImage(img, x, y, width, height, radius, ctx = ctxt) {
-  ctx.save();
-  roundedImage(x, y, width, height, radius);
-  ctx.strokeStyle = 'white';
-  ctx.lineWidth = 5;
-  ctx.stroke();
-  ctx.clip();
-  ctx.drawImage(img, x, y, width, height);
-  ctx.restore();
+  layer.add(pathData);
 }
 
-function roundedImage(x, y, width, height, radius, ctx = ctxt) {
-  ctx.beginPath();
-  ctx.moveTo(x + radius, y);
-  ctx.lineTo(x + width - radius, y);
-  ctx.quadraticCurveTo(x + width, y, x + width, y + radius);
-  ctx.lineTo(x + width, y + height - radius);
-  ctx.quadraticCurveTo(x + width, y + height, x + width - radius, y + height);
-  ctx.lineTo(x + radius, y + height);
-  ctx.quadraticCurveTo(x, y + height, x, y + height - radius);
-  ctx.lineTo(x, y + radius);
-  ctx.quadraticCurveTo(x, y, x + radius, y);
-  ctx.closePath();
-}
-
-function drawPath(path, x = 0, y = 0, ctx = ctxm) {
-  console.log({ x, y });
-  const pathData = new Path2D(path);
-  const pathTransform = new Path2D();
-  pathTransform.addPath(pathData, transform(x, y));
-  ctx.stroke(pathTransform);
-}
-
-function transform(x = 0, y = 0) {
-  return {
-    a: 1,
-    b: 0,
-    c: 0,
-    d: 1,
-    e: x,
-    f: y,
-  };
-}
+const imageOffset = Object.freeze({
+  chungbuk: { x: 385.9, y: 265.9, width: 280, height: 280 },
+  chungnam: { x: 223.65, y: 291.55, width: 270, height: 260 },
+  gangwon: { x: 356.65, y: -12.75, width: 430, height: 430 },
+  gyeongbuk: { x: 475.7, y: 281.8, width: 340, height: 360 },
+  gyeonggi: { x: 282.25, y: 67.35, width: 250, height: 300 },
+  gyeongnam: { x: 487.35, y: 517.7, width: 350, height: 260 },
+  jeju: { x: 310.105, y: 814.295, width: 360, height: 240 },
+  jeonbuk: { x: 260.3, y: 461.2, width: 290, height: 240 },
+  jeonnam: { x: 233.3, y: 606.6, width: 300, height: 270 },
+});
 
 const representsSVG = Object.freeze({
   gyeonggi:
