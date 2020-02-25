@@ -19,9 +19,6 @@ app.use(router.allowedMethods());
 const awsXRay = require('aws-xray-sdk');
 const awsSdk = awsXRay.captureAWS(require('aws-sdk'));
 
-// s3 가져오기
-const { upload, deleteObject, deleteFolder } = require('./modules/s3_util');
-
 // Dynamoose 설정
 const { Data } = require('./modules/dynamo_schema');
 
@@ -38,11 +35,86 @@ const {
 // Logger 가져오기
 const Logger = require('./modules/logger');
 
+// Lambda invoke 가져오기
+const { makeThumbnail, capture } = require('./modules/lambda');
+
+// s3 가져오기
+const { upload, deleteObject, deleteFolder } = require('./modules/s3_util');
+
 // Firebase 가져오기
 const { deleteMap } = require('./modules/firebase');
 
-// Lambda Invoke 가져오기
-const { makeThumbnail, capture } = require('./modules/lambda');
+/**
+ * Route: /maps
+ * Method: get, post
+ */
+
+/* 지도 리스트 가져오기 */
+router.get('/', async ctx => {
+  // 함수 호출위치 로그
+  console.log(ctx.request.url, ctx.request.method);
+
+  // Auth에서 uid 가져오기
+  const uid = getUid(ctx);
+
+  // uid에 해당하는 user의 count
+  const maps = await Data.query('SK')
+    .using('GSI')
+    .eq(uid)
+    .where('types')
+    .eq('USER-MAP')
+    .exec();
+
+  // 지도-유저에서 mid들을 뽑아서 넣는다.
+  let mapData = [];
+  for (let i = 0; i < maps.count; i++) {
+    const relation = DClass.parseClass(maps[i]);
+    mapData.push({
+      mid: relation.mid,
+      name: relation.name,
+      logNumber: relation.logNumber,
+      updatedAt: relation.updatedAt,
+    });
+  }
+
+  createResponse(ctx, statusCode.success, mapData);
+});
+
+/* 새로운 지도 생성 */
+router.post('/', bodyParser(), async ctx => {
+  // 함수 호출위치 로그
+  console.log(ctx.request.url, ctx.request.method);
+
+  // Auth에서 uid 가져오기
+  const uid = getUid(ctx);
+
+  // 파라미터 가져오기
+  const name = ctx.request.body.name || '새 지도';
+  console.log('[Parameter]', { uid, name });
+
+  // 새로운 지도 생성
+  const mapData = new DClass.Map({ name });
+  const newMap = new Data(mapData.json());
+  await newMap.save();
+
+  // 지도-유저 연결
+  const userMapData = new DClass.UserMap({
+    mid: mapData.mid,
+    uid,
+    name,
+  });
+
+  const newUserMap = new Data(userMapData.json());
+  await newUserMap.save();
+
+  // 섬네일 제작
+  await makeThumbnail(mapData.mid, [newUserMap]);
+
+  // 로그
+  await Logger(ctx, mapData.mid);
+
+  createResponse(ctx, statusCode.success, mapData);
+});
 
 /**
  * Route: /maps/{mid}

@@ -100,6 +100,16 @@ provider:
       # the specific table for the stage
       Resource:
         - 'arn:aws:dynamodb:ap-northeast-2:*:*'
+    - Effect: Allow
+      Action:
+        - lambda:InvokeFunction
+      # Restrict our IAM role permissions to
+      # the specific table for the stage
+      Resource:
+        - 'arn:aws:lambda:ap-northeast-2:383760702031:function:photomap-server-dev-DrawThumbnail'
+        - 'arn:aws:lambda:ap-northeast-2:383760702031:function:photomap-server-dev-DrawMapImage'
+        - 'arn:aws:lambda:ap-northeast-2:383760702031:function:photomap-server-prod-DrawThumbnail'
+        - 'arn:aws:lambda:ap-northeast-2:383760702031:function:photomap-server-prod-DrawMapImage'
 
 # you can overwrite defaults here
 #  stage: dev
@@ -150,56 +160,30 @@ functions:
     handler: src/auth.verify
     tracing: true
   # 유저 관련 함수
-  UserGet:
-    handler: src/userGet.handler
-    tracing: true
-    events:
-      - http:
-          path: /users
-          method: get
-          authorizer: authorize
-          cors: true
-  UserDelete:
-    handler: src/userDelete.handler
-    tracing: true
-    # layers:
-    #  - arn:aws:lambda:ap-northeast-2:383760702031:layer:canvas-library-layer:1
-    #  - arn:aws:lambda:ap-northeast-2:383760702031:layer:node-canvas-layer:1
-    events:
-      - http:
-          path: /users
-          method: delete
-          authorizer: authorize
-          cors: true
   User:
     handler: src/users.handler
     tracing: true
     events:
+      - http:
+          path: /users
+          method: ANY
+          authorizer: authorize
+          cors: true
       - http:
           path: /users/{ANY+}
           method: patch
           authorizer: authorize
           cors: true
   # 지도 관련 함수
-  Map1:
-    handler: src/maps1.handler
+  Map:
+    handler: src/maps.handler
     tracing: true
-    # layers:
-    # - arn:aws:lambda:ap-northeast-2:383760702031:layer:canvas-library-layer:1
-    # - arn:aws:lambda:ap-northeast-2:383760702031:layer:node-canvas-layer:1
     events:
       - http:
           path: /maps
           method: ANY
           authorizer: authorize
           cors: true
-  Map2:
-    handler: src/maps2.handler
-    tracing: true
-    # layers:
-    # - arn:aws:lambda:ap-northeast-2:383760702031:layer:canvas-library-layer:1
-    # - arn:aws:lambda:ap-northeast-2:383760702031:layer:node-canvas-layer:1
-    events:
       - http:
           path: /maps/{any+}
           method: ANY
