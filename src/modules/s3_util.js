@@ -29,8 +29,12 @@ exports.upload = multer({
       cb(
         null,
         'uploads/' +
+          process.env.STAGE +
+          '/' +
           req.url.split('/')[2] +
           folder +
+          req.body.cityKey +
+          '/' +
           Date.now().toString() +
           file.originalname
       );
@@ -46,7 +50,7 @@ exports.putObject = async (mid, buffer) => {
     Body: buffer,
     Bucket: process.env.S3_BUCKET_NAME,
     ACL: 'public-read',
-    Key: `uploads/${mid}/main.png`,
+    Key: `uploads/${process.env.STAGE}/${mid}/main.png`,
     Tagging: 'fieldName=image',
     CacheControl: 'max-age=0',
   };
@@ -86,7 +90,7 @@ exports.deleteArray = async objArray => {
 exports.deleteFolder = async prefix => {
   let listParams = {
     Bucket: process.env.S3_BUCKET_NAME,
-    Prefix: `uploads/${prefix}/`,
+    Prefix: `uploads/${process.env.STAGE}/${prefix}/`,
   };
   const data = await s3.listObjectsV2(listParams).promise();
 

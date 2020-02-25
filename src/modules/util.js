@@ -13,6 +13,8 @@ exports.isUndefined = obj => {
 
 exports.createResponse = (ctx, status, body, err = null) => {
   ctx.status = status;
+  ctx.set('Access-Control-Allow-Origin', '*');
+  ctx.set('Access-Control-Allow-Credentials', true);
   ctx.body = {
     message: err,
     data: body,

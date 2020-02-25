@@ -23,3 +23,12 @@ Resources:
       StatusCode: '401'
       ResponseTemplates:
         application/json: '{"data": null, "message": $context.error.messageString}'
+  GatewayResponseDefault4XX:
+    Type: 'AWS::ApiGateway::GatewayResponse'
+    Properties:
+      ResponseParameters:
+        gatewayresponse.header.Access-Control-Allow-Origin: "'*'"
+        gatewayresponse.header.Access-Control-Allow-Headers: "'*'"
+      ResponseType: DEFAULT_4XX
+      RestApiId:
+        Ref: 'ApiGatewayRestApi'

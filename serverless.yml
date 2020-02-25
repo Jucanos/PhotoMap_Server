@@ -69,6 +69,7 @@ provider:
   runtime: nodejs10.x
   stage: ${env:STAGE}
   region: ap-northeast-2
+  timeout: 60
   tracing:
     apiGateway: true
     lambda: true
@@ -157,6 +158,7 @@ functions:
           path: /users
           method: get
           authorizer: authorize
+          cors: true
   UserDelete:
     handler: src/userDelete.handler
     tracing: true
@@ -168,6 +170,7 @@ functions:
           path: /users
           method: delete
           authorizer: authorize
+          cors: true
   User:
     handler: src/users.handler
     tracing: true
@@ -176,6 +179,7 @@ functions:
           path: /users/{ANY+}
           method: patch
           authorizer: authorize
+          cors: true
   # 지도 관련 함수
   Map1:
     handler: src/maps1.handler
@@ -188,6 +192,7 @@ functions:
           path: /maps
           method: ANY
           authorizer: authorize
+          cors: true
   Map2:
     handler: src/maps2.handler
     tracing: true
@@ -199,6 +204,7 @@ functions:
           path: /maps/{any+}
           method: ANY
           authorizer: authorize
+          cors: true
   # 스토리 관련 함수
   Story:
     handler: src/stories.handler
@@ -208,10 +214,12 @@ functions:
           path: /stories
           method: ANY
           authorizer: authorize
+          cors: true
       - http:
           path: /stories/{any+}
           method: ANY
           authorizer: authorize
+          cors: true
   # 로그 관련 함수
   Log:
     handler: src/logs.handler
@@ -221,6 +229,7 @@ functions:
           path: /logs/{any+}
           method: GET
           authorizer: authorize
+          cors: true
   # 공지 관련 함수
   Notice:
     handler: src/notice.handler
@@ -229,6 +238,7 @@ functions:
       - http:
           path: /notice
           method: ANY
+          cors: true
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
