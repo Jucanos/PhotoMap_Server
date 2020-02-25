@@ -1,13 +1,12 @@
 // Canvas 설정
-const { createCanvas, loadImage } = require('canvas');
-const canvas = createCanvas(200, 200);
-const ctx = canvas.getContext('2d');
-
-// Google polyfill 설정
-require('canvas-5-polyfill');
+// const { createCanvas, loadImage } = require('canvas');
+// const canvas = createCanvas(200, 200);
+// const ctx = canvas.getContext('2d');
 
 // Konva 설정
 const Konva = require('konva-node');
+
+// 캡처용 Stage
 const stage = new Konva.Stage({
   width: 1000,
   height: 1064,
@@ -26,6 +25,14 @@ stage.add(backgroundLayer);
 const layer = new Konva.Layer();
 stage.add(layer);
 
+// 섬네일용 Stage
+const stageThumbnail = new Konva.Stage({
+  width: 200,
+  height: 200,
+});
+const layerThumbnail = new Konva.Layer();
+stageThumbnail.add(layerThumbnail);
+
 // Dynamoose 설정
 const Dynamoose = require('./dynamo_schema');
 const Data = Dynamoose.Data;
@@ -41,6 +48,7 @@ function base64url_encode(str) {
 }
 
 exports.makeThumbnail = async (mid, users) => {
+  return;
   // 캔버스 지우기
   clearCanvas();
   console.log('[makeThumbnail]', { users });

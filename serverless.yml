@@ -69,7 +69,7 @@ provider:
   runtime: nodejs10.x
   stage: ${env:STAGE}
   region: ap-northeast-2
-  timeout: 60
+  timeout: 30
   tracing:
     apiGateway: true
     lambda: true
@@ -162,9 +162,9 @@ functions:
   UserDelete:
     handler: src/userDelete.handler
     tracing: true
-    layers:
-      - arn:aws:lambda:ap-northeast-2:383760702031:layer:canvas-library-layer:1
-      - arn:aws:lambda:ap-northeast-2:383760702031:layer:node-canvas-layer:1
+    # layers:
+    #  - arn:aws:lambda:ap-northeast-2:383760702031:layer:canvas-library-layer:1
+    #  - arn:aws:lambda:ap-northeast-2:383760702031:layer:node-canvas-layer:1
     events:
       - http:
           path: /users
@@ -184,9 +184,9 @@ functions:
   Map1:
     handler: src/maps1.handler
     tracing: true
-    layers:
-      - arn:aws:lambda:ap-northeast-2:383760702031:layer:canvas-library-layer:1
-      - arn:aws:lambda:ap-northeast-2:383760702031:layer:node-canvas-layer:1
+    # layers:
+    # - arn:aws:lambda:ap-northeast-2:383760702031:layer:canvas-library-layer:1
+    # - arn:aws:lambda:ap-northeast-2:383760702031:layer:node-canvas-layer:1
     events:
       - http:
           path: /maps
@@ -196,9 +196,9 @@ functions:
   Map2:
     handler: src/maps2.handler
     tracing: true
-    layers:
-      - arn:aws:lambda:ap-northeast-2:383760702031:layer:canvas-library-layer:1
-      - arn:aws:lambda:ap-northeast-2:383760702031:layer:node-canvas-layer:1
+    # layers:
+    # - arn:aws:lambda:ap-northeast-2:383760702031:layer:canvas-library-layer:1
+    # - arn:aws:lambda:ap-northeast-2:383760702031:layer:node-canvas-layer:1
     events:
       - http:
           path: /maps/{any+}
