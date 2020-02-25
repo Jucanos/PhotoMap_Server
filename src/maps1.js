@@ -29,8 +29,8 @@ const { statusCode, createResponse, getUid } = require('./modules/util');
 // Logger 가져오기
 const Logger = require('./modules/logger');
 
-// Canvas 가져오기
-const { makeThumbnail } = require('./modules/canvas');
+// Lambda invoke 가져오기
+const { makeThumbnail } = require('./modules/lambda');
 
 /**
  * Route: /maps

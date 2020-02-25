@@ -239,6 +239,19 @@ functions:
           path: /notice
           method: ANY
           cors: true
+  # 캔버스 관련 함수
+  DrawThumbnail:
+    handler: src/drawThumbnail.handler
+    tracing: true
+    layers:
+      - arn:aws:lambda:ap-northeast-2:383760702031:layer:canvas-library-layer:1
+      - arn:aws:lambda:ap-northeast-2:383760702031:layer:node-canvas-layer:1
+  DrawMapImage:
+    handler: src/drawMapImage.handler
+    tracing: true
+    layers:
+      - arn:aws:lambda:ap-northeast-2:383760702031:layer:canvas-library-layer:1
+      - arn:aws:lambda:ap-northeast-2:383760702031:layer:node-canvas-layer:1
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details

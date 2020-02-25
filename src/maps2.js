@@ -38,11 +38,11 @@ const {
 // Logger 가져오기
 const Logger = require('./modules/logger');
 
-// Canvas 가져오기
-const { makeThumbnail, capture } = require('./modules/canvas');
-
 // Firebase 가져오기
 const { deleteMap } = require('./modules/firebase');
+
+// Lambda Invoke 가져오기
+const { makeThumbnail, capture } = require('./modules/lambda');
 
 /**
  * Route: /maps/{mid}
@@ -489,6 +489,7 @@ router.get('/:id/represents', async ctx => {
   console.log({ mapData });
 
   const fileURL = await capture(mid, mapData.represents);
+  console.log(fileURL);
 
   createResponse(ctx, statusCode.success, fileURL);
 });
