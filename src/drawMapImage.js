@@ -85,6 +85,19 @@ module.exports.handler = async (ctx, context) => {
     }
     console.log(images);
 
+    // 독도 로드
+    const dokdoImage = await loadImage(
+      process.env.S3_CUSTOM_DOMAIN + 'dokdo.svg'
+    );
+    const dokdo = new Konva.Image({
+      width: 100,
+      height: 50,
+      x: 850,
+      y: 300,
+      image: dokdoImage,
+    });
+    layer.add(dokdo);
+
     // stage에 path들을 그린다.
     for (let cityKey of cityKeys) {
       console.log(cityKey);
