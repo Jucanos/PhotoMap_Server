@@ -103,8 +103,8 @@ module.exports.handler = async (ctx, context) => {
       console.log(cityKey);
 
       if (cityKey === 'jeju')
-        drawPath(cityKey, images[cityKey], -85.2888, -997.914);
-      else drawPath(cityKey, images[cityKey]);
+        drawPath(cityKey, images[cityKey], -85.2888, -967.914);
+      else drawPath(cityKey, images[cityKey], 0, 30);
     }
     stage.draw();
 
