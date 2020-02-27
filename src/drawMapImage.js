@@ -103,7 +103,7 @@ module.exports.handler = async (ctx, context) => {
       console.log(cityKey);
 
       if (cityKey === 'jeju')
-        drawPath(cityKey, images[cityKey], -85.2888, -967.914);
+        drawPath(cityKey, images[cityKey], -85.2888, -997.914 + 30);
       else drawPath(cityKey, images[cityKey], 0, 30);
     }
     stage.draw();
@@ -151,7 +151,7 @@ function drawPath(cityKey, image = null, x = 0, y = 0) {
     var scaleY = imageOffset[cityKey].height / image.height;
     pathData.fillPatternOffset({
       x: (-1 * (imageOffset[cityKey].x - pathData.x())) / scaleX,
-      y: (-1 * (imageOffset[cityKey].y - pathData.y())) / scaleY,
+      y: (-1 * (imageOffset[cityKey].y - pathData.y() + 30)) / scaleY,
     });
     pathData.fillPatternScale({
       x: scaleX,
@@ -162,15 +162,15 @@ function drawPath(cityKey, image = null, x = 0, y = 0) {
 }
 
 const imageOffset = Object.freeze({
-  chungbuk: { x: 385.9, y: 265.9, width: 280, height: 280 },
-  chungnam: { x: 223.65, y: 291.55, width: 270, height: 260 },
-  gangwon: { x: 356.65, y: -12.75, width: 430, height: 430 },
-  gyeongbuk: { x: 475.7, y: 281.8, width: 340, height: 360 },
-  gyeonggi: { x: 282.25, y: 67.35, width: 250, height: 300 },
-  gyeongnam: { x: 487.35, y: 517.7, width: 350, height: 260 },
-  jeju: { x: 310.105, y: 814.295, width: 360, height: 240 },
-  jeonbuk: { x: 260.3, y: 461.2, width: 290, height: 240 },
-  jeonnam: { x: 233.3, y: 606.6, width: 300, height: 270 },
+  gyeonggi: { x: 276.3, y: 67.81, width: 250, height: 300 },
+  gangwon: { x: 357.32, y: -11.42, width: 430, height: 430 },
+  chungbuk: { x: 387.57, y: 265.14, width: 280, height: 280 },
+  chungnam: { x: 223.25, y: 297.99, width: 270, height: 260 },
+  jeonbuk: { x: 257.33, y: 464.92, width: 290, height: 240 },
+  jeonnam: { x: 227, y: 607.28, width: 300, height: 270 },
+  gyeongbuk: { x: 478.47, y: 287.93, width: 340, height: 360 },
+  gyeongnam: { x: 445.34, y: 518.1, width: 350, height: 260 },
+  jeju: { x: 332.02, y: 831.17, width: 300, height: 200 },
 });
 
 const representsSVG = Object.freeze({
