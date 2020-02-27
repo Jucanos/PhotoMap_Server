@@ -62,7 +62,7 @@ exports.sendPush = async (users, body = '본문') => {
 // 원자성 증가
 exports.atomicCounter = async mid => {
   // 지도의 reference 가져오기
-  const ref = db.ref(`maps/${mid}`);
+  const ref = db.ref(`${process.env.STAGE}/maps/${mid}`);
 
   // value를 1 원자성 증가
   const result = await ref.transaction(current_value => {
@@ -77,7 +77,7 @@ exports.atomicCounter = async mid => {
 // 사용자 추가시 viewd logNumber 초기화
 exports.enrollMap = async (uid, mid, value = 0) => {
   // 사용자의 지도 reference 가져오기
-  const ref = db.ref(`users/${uid}/${mid}`);
+  const ref = db.ref(`${process.env.STAGE}/users/${uid}/${mid}`);
 
   await ref.set(value);
 };
@@ -85,7 +85,7 @@ exports.enrollMap = async (uid, mid, value = 0) => {
 // 지도에서 사용자 나갈시 users/{uid}/{mid} 삭제
 exports.quitMap = async (uid, mid) => {
   // 사용자의 지도 reference 가져오기
-  const ref = db.ref(`users/${uid}/${mid}`);
+  const ref = db.ref(`${process.env.STAGE}/users/${uid}/${mid}`);
 
   await ref.remove();
 };
@@ -93,7 +93,7 @@ exports.quitMap = async (uid, mid) => {
 // 사용자 삭제시 users/{uid} 삭제
 exports.deleteUser = async uid => {
   // 사용자의 지도 reference 가져오기
-  const ref = db.ref(`users/${uid}`);
+  const ref = db.ref(`${process.env.STAGE}/users/${uid}`);
 
   await ref.remove();
 };
@@ -101,13 +101,13 @@ exports.deleteUser = async uid => {
 // 지도 삭제시 maps/{mid} 삭제
 exports.deleteMap = async (mid, users) => {
   // 사용자의 지도 reference 가져오기
-  const ref = db.ref(`maps/${mid}`);
+  const ref = db.ref(`${process.env.STAGE}/maps/${mid}`);
 
   if (!isUndefined(users)) {
     console.log({ users });
     for (const user of users) {
       if (user.types == 'USER-MAP') {
-        const userRef = db.ref(`users/${user.SK}/${mid}`);
+        const userRef = db.ref(`${process.env.STAGE}/users/${user.SK}/${mid}`);
         await userRef.remove();
       }
     }
