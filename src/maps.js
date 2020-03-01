@@ -352,6 +352,27 @@ router.patch('/:id', bodyParser(), async ctx => {
     return createResponse(ctx, statusCode.failure, null, 'map is not exist');
   }
 
+  // 삭제시 지도에 소속되있는지 확인
+  if (remove == 'true') {
+    let owner = false;
+    for (let i = 0; i < maps.count; i++) {
+      if (maps[i].types == 'USER-MAP') {
+        if (maps[i].SK == uid) {
+          owner = true;
+        }
+      }
+    }
+    if (!owner) {
+      console.error('you not enrolled this map');
+      return createResponse(
+        ctx,
+        statusCode.failure,
+        null,
+        'you not enrolled this map'
+      );
+    }
+  }
+
   // 소유자 삭제 & 지도의 유지자가 없는경우 지도도 삭제
   if (maps.count <= 2 && remove == 'true') {
     let deleteQueue = [];
