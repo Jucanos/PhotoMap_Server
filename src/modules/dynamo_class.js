@@ -1,4 +1,4 @@
-const { representsDefault, isUndefined, uuid, numberPad } = require('./util');
+const { representsDefault, isUndefined, uuid } = require('./util');
 
 exports.parseClass = function(doc) {
   doc = doc.originalItem();
@@ -178,36 +178,6 @@ exports.Story = class Story extends Data {
         title: this.title,
         context: this.context,
         files: this.files,
-      },
-    };
-  }
-};
-
-exports.Log = class Log extends Data {
-  constructor(options = {}) {
-    super(options);
-
-    // DB에서 가져온 경우 content가 존재
-    if (!isUndefined(options.content)) {
-      this.lid = options.PK;
-      this.mid = options.SK;
-    }
-
-    // lid 기본값
-    if (isUndefined(this.sid)) {
-      this.lid = uuid();
-    }
-  }
-
-  json() {
-    return {
-      PK: this.lid,
-      SK: this.mid,
-      types: `LOG.${numberPad(this.logId, 10)}`,
-      content: {
-        uid: this.uid,
-        data: this.data,
-        cityKey: this.cityKey,
       },
     };
   }

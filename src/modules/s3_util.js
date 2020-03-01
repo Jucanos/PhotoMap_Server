@@ -45,16 +45,40 @@ exports.upload = multer({
   },
 });
 
-exports.putObject = async (mid, buffer) => {
+exports.fileURL = (mid, name, ext = 'png') => {
+  return `uploads/${process.env.STAGE}/${mid}/${name}.${ext}`;
+};
+
+// 단일 객체 업로드
+exports.putObject = async (mid, buffer, name = 'main') => {
   const params = {
     Body: buffer,
     Bucket: process.env.S3_BUCKET_NAME,
+    ContentType: 'image/png',
     ACL: 'public-read',
-    Key: `uploads/${process.env.STAGE}/${mid}/main.png`,
+    Key: this.fileURL(mid, name),
     Tagging: 'fieldName=image',
     CacheControl: 'max-age=0',
   };
   await s3.putObject(params).promise();
+};
+
+// 파일 존재여부 확인
+exports.fileExist = async (mid, key) => {
+  try {
+    const result = await s3
+      .headObject({
+        Bucket: process.env.S3_BUCKET_NAME,
+        Key: this.fileURL(mid, key),
+      })
+      .promise();
+    console.log(result);
+
+    return true;
+  } catch (err) {
+    console.log('[fileExist Error]', err);
+    return false;
+  }
 };
 
 // 단일 객체 삭제

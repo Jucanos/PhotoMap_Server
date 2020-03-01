@@ -1,16 +1,31 @@
-// Canvas 설정
+// dotenv fetch
+require('dotenv').config();
+
+// canvas 설정
 const { createCanvas, loadImage } = require('canvas');
 const canvas = createCanvas(200, 200);
 const ctx = canvas.getContext('2d');
 
 // Dynamoose 설정
-const Dynamoose = require('./dynamo_schema');
+const Dynamoose = require('./modules/dynamo_schema');
 const Data = Dynamoose.Data;
 
 // s3 가져오기
-const { putObject } = require('./s3_util');
+const { putObject } = require('./modules/s3_util');
 
-exports.makeThumbnail = async (mid, users) => {
+// util 가져오기
+const { statusCode } = require('./modules/util');
+
+/* 섬네일 만들기 */
+module.exports.handler = async (ctx, context) => {
+  // lambda handler 기본 환경설정
+  context.basePath = process.env.BASE_PATH;
+  context.callbackWaitsForEmptyEventLoop = false;
+
+  // 파라미터 가져오기
+  const mid = ctx.mid;
+  const users = ctx.users;
+
   // 캔버스 지우기
   clearCanvas();
   console.log('[makeThumbnail]', { users });
@@ -65,6 +80,11 @@ exports.makeThumbnail = async (mid, users) => {
 
   // 이미지를 png로 저장
   await putObject(mid, canvas.toBuffer('image/png'));
+
+  return {
+    statusCode: statusCode.processingSuccess,
+    body: null,
+  };
 };
 
 const clearCanvas = () => {
