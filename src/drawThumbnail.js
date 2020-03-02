@@ -51,6 +51,7 @@ module.exports.handler = async (ctx, context) => {
     if (i == 4) break;
     const thumbnail = userData[i].content.thumbnail;
     images.push(await loadImage(thumbnail));
+    console.log('[makeThumbnail]', i, thumbnail);
   }
   console.log('[makeThumbnail]', { images });
 

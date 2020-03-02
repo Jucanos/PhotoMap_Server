@@ -62,8 +62,13 @@ router.get('/', async ctx => {
   // 파라미터 추출하기
   const uid = String(result.id);
   const nickname = result.kakao_account.profile.nickname;
-  const thumbnail = result.kakao_account.profile.thumbnail_image_url;
+  let thumbnail = result.kakao_account.profile.thumbnail_image_url;
   console.log('[Parameter]', { uid, nickname, thumbnail });
+
+  // thumbnail이 없을시 기본값
+  if (isUndefined(thumbnail)) {
+    thumbnail = process.env.S3_CUSTOM_DOMAIN + 'default_user.png';
+  }
 
   // 초기값 설정
   let userData = new DClass.User({
