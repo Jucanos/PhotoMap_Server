@@ -40,8 +40,8 @@ const { deleteFolder } = require('./modules/s3_util');
 // Logger 가져오기
 const Logger = require('./modules/logger');
 
-// Lambda invoke 가져오기
-const { makeThumbnail } = require('./modules/lambda');
+// SQS 가져오기
+const { makeThumbnail } = require('./modules/sqs');
 
 // Firebase 가져오기
 const { deleteUser, deleteMap } = require('./modules/firebase');

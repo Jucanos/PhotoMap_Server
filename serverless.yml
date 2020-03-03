@@ -110,6 +110,14 @@ provider:
         - 'arn:aws:lambda:ap-northeast-2:383760702031:function:photomap-server-dev-DrawMapImage'
         - 'arn:aws:lambda:ap-northeast-2:383760702031:function:photomap-server-prod-DrawThumbnail'
         - 'arn:aws:lambda:ap-northeast-2:383760702031:function:photomap-server-prod-DrawMapImage'
+    # for SQS
+    - Effect: Allow
+      Action:
+        - sqs:*
+      # Restrict our IAM role permissions to
+      # the specific table for the stage
+      Resource:
+        - 'arn:aws:sqs:ap-northeast-2:383760702031:photomap-${env:STAGE}-thumbnail.fifo'
 
 # you can overwrite defaults here
 #  stage: dev
@@ -220,6 +228,8 @@ functions:
     layers:
       - arn:aws:lambda:ap-northeast-2:383760702031:layer:canvas-library-layer:1
       - arn:aws:lambda:ap-northeast-2:383760702031:layer:node-canvas-layer:1
+    events:
+      - sqs: arn:aws:sqs:ap-northeast-2:383760702031:photomap-${env:STAGE}-thumbnail.fifo
   DrawMapImage:
     handler: src/drawMapImage.handler
     tracing: true

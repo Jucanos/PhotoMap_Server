@@ -36,7 +36,10 @@ const {
 const Logger = require('./modules/logger');
 
 // Lambda invoke 가져오기
-const { makeThumbnail, capture } = require('./modules/lambda');
+const { capture } = require('./modules/lambda');
+
+// SQS 가져오기
+const { makeThumbnail } = require('./modules/sqs');
 
 // s3 가져오기
 const { upload, deleteObject, deleteFolder } = require('./modules/s3_util');
