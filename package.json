@@ -31,6 +31,7 @@
     "canvas": "^2.6.1",
     "prettier": "^1.19.1",
     "serverless-apigw-binary": "^0.4.4",
+    "serverless-deployment-bucket": "^1.1.1",
     "serverless-domain-manager": "^3.3.1",
     "serverless-dotenv-plugin": "^2.3.2",
     "serverless-dynamodb-local": "^0.2.39",

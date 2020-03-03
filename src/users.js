@@ -40,8 +40,8 @@ const { deleteFolder } = require('./modules/s3_util');
 // Logger 가져오기
 const Logger = require('./modules/logger');
 
-// Lambda invoke 가져오기
-const { makeThumbnail } = require('./modules/lambda');
+// SQS 가져오기
+const { makeThumbnail } = require('./modules/sqs');
 
 // Firebase 가져오기
 const { deleteUser, deleteMap } = require('./modules/firebase');
@@ -98,10 +98,25 @@ router.get('/', async ctx => {
     userData.primary = userDB.primary;
 
     // nickname과 thumbnail중 하나라도 다르면
-    if (!userData.equal(userDB)) {
+    const isEqual = userData.equal(userDB);
+    if (isEqual) {
       console.log('user data update');
       userDB.update(userData);
       await Data.update(userDB.json());
+
+      if (isEqual == 1 || isEqual == 3) {
+        const userMaps = await Data.query('SK')
+          .using('GSI')
+          .eq(uid)
+          .where('types')
+          .eq('USER-MAP')
+          .exec();
+        console.log('[Thumbnail Changed]', { userMaps });
+
+        for (const userMap of userMaps) {
+          await makeThumbnail(userMap.PK);
+        }
+      }
     }
   }
 

@@ -76,6 +76,8 @@ exports.atomicCounter = async mid => {
 
 // 사용자 추가시 viewd logNumber 초기화
 exports.enrollMap = async (uid, mid, value = 0) => {
+  console.log('[enrollMap]', { uid, mid, value });
+
   // 사용자의 지도 reference 가져오기
   const userRef = db.ref(`${process.env.STAGE}/users/${uid}/${mid}`);
   await userRef.set(value);
@@ -92,6 +94,8 @@ exports.enrollMap = async (uid, mid, value = 0) => {
 
 // 지도에서 사용자 나갈시 users/{uid}/{mid} 삭제
 exports.quitMap = async (uid, mid) => {
+  console.log('[quitMap]', { uid, mid });
+
   // 사용자의 지도 reference 가져오기
   const ref = db.ref(`${process.env.STAGE}/users/${uid}/${mid}`);
 
@@ -109,6 +113,8 @@ exports.quitMap = async (uid, mid) => {
 
 // 사용자 삭제시 users/{uid} 삭제
 exports.deleteUser = async uid => {
+  console.log('[deleteUser]', { uid });
+
   // 사용자의 지도 reference 가져오기
   const ref = db.ref(`${process.env.STAGE}/users/${uid}`);
 
@@ -117,6 +123,8 @@ exports.deleteUser = async uid => {
 
 // 지도 삭제시 maps/{mid} 삭제
 exports.deleteMap = async (mid, users) => {
+  console.log('[deleteMap]', { mid, users });
+
   // 사용자의 지도 reference 가져오기
   const ref = db.ref(`${process.env.STAGE}/maps/${mid}`);
 

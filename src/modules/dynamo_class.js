@@ -78,7 +78,25 @@ exports.User = class User extends Data {
   }
 
   equal(user) {
-    return this.nickname === user.nickname && this.thumbnail === user.thumbnail;
+    /*
+      return code
+      0: 닉네임, 섬네일 같음
+      1: 닉네임, 섬네일 둘다 다름
+      2: 닉네임 다름
+      3: 섬네일 다름
+    */
+    if (this.nickname === user.nickname && this.thumbnail === user.thumbnail) {
+      return 0;
+    } else if (
+      this.nickname !== user.nickname &&
+      this.thumbnail !== user.thumbnail
+    ) {
+      return 1;
+    } else if (this.nickname !== user.nickname) {
+      return 2;
+    } else if (this.thumbnail !== user.thumbnail) {
+      return 3;
+    }
   }
 };
 

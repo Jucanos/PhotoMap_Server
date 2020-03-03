@@ -36,6 +36,7 @@ jobs:
           echo FIREBASE_CLIENT_EMAIL=${{ secrets.FIREBASE_CLIENT_EMAIL }} >> .env
           echo FIREBASE_CLIENT_ID=${{ secrets.FIREBASE_CLIENT_ID }} >> .env
           echo FIREBASE_CLIENT_CERT_URL=${{ secrets.FIREBASE_CLIENT_CERT_URL }} >> .env
+          echo QUEUE_URL=${{ secrets.PROD_QUEUE_URL }} >> .env
       - name: serverless deploy
         uses: serverless/github-action@master
         with:
