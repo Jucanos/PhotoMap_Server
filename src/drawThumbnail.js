@@ -16,6 +16,9 @@ const { putObject } = require('./modules/s3_util');
 // util 가져오기
 const { statusCode } = require('./modules/util');
 
+// Firebase 가져오기
+const { addUserNumber } = require('./modules/firebase');
+
 /* 섬네일 만들기 */
 module.exports.handler = async (event, context) => {
   // lambda handler 기본 환경설정
@@ -35,6 +38,7 @@ module.exports.handler = async (event, context) => {
         .eq(mid)
         .filter('types')
         .eq('USER-MAP')
+        .limit(4)
         .exec();
     }
 
@@ -45,7 +49,6 @@ module.exports.handler = async (event, context) => {
     // 유저-지도에서 필요한 정보 추출 (최대 4개)
     let userModels = [];
     for (let i = 0; i < users.length; i++) {
-      if (i == 4) break;
       console.log(users[i]);
       userModels.push({
         PK: users[i].SK,
@@ -93,6 +96,9 @@ module.exports.handler = async (event, context) => {
 
     // 이미지를 png로 저장
     await putObject(mid, canvas.toBuffer('image/png'));
+
+    // Trick: userNumber의 변동을 알린다.
+    await addUserNumber(mid);
   }
 
   return {
