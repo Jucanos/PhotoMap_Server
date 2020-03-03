@@ -28,7 +28,7 @@ module.exports = async (ctx, mid, story = null) => {
 
   // uid 가져오기
   const uid = getUid(ctx);
-  console.log('[Log]', { url, method });
+  console.log('[Log]', { urlArray, url, method });
 
   // user 정보 가져오기
   const user = await Data.queryOne('PK')
