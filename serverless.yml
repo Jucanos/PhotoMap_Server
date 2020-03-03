@@ -73,6 +73,9 @@ provider:
   tracing:
     apiGateway: true
     lambda: true
+  deploymentBucket:
+    name: photomap-server-${env:STAGE}-serverlessdeploymentbucket
+    serverSideEncryption: AES256
   iamRoleStatements:
     - Effect: 'Allow'
       Action:
@@ -273,6 +276,7 @@ functions:
 #            path: /hello
 
 plugins:
+  - serverless-deployment-bucket
   - serverless-dotenv-plugin
   - serverless-apigw-binary
   - serverless-plugin-tracing
