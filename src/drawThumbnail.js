@@ -16,70 +16,90 @@ const { putObject } = require('./modules/s3_util');
 // util 가져오기
 const { statusCode } = require('./modules/util');
 
+// Firebase 가져오기
+const { addUserNumber } = require('./modules/firebase');
+
 /* 섬네일 만들기 */
-module.exports.handler = async (ctx, context) => {
+module.exports.handler = async (event, context) => {
   // lambda handler 기본 환경설정
   context.basePath = process.env.BASE_PATH;
   context.callbackWaitsForEmptyEventLoop = false;
 
-  // 파라미터 가져오기
-  const mid = ctx.mid;
-  const users = ctx.users;
+  for (const { messageId, body } of event.Records) {
+    console.log('[SQS Message]', messageId, body);
 
-  // 캔버스 지우기
-  clearCanvas();
-  console.log('[makeThumbnail]', { users });
+    // 파라미터 가져오기
+    const bodyData = JSON.parse(body);
+    const mid = bodyData.mid;
+    let users = bodyData.users;
 
-  // 유저-지도에서 필요한 정보 추출
-  let userModels = [];
-  for (let i = 0; i < users.length; i++) {
-    console.log(users[i]);
-    userModels.push({
-      PK: users[i].SK,
-      SK: 'INFO',
-    });
-  }
-  console.log('[makeThumbnail]', { userModels });
+    if (users == null) {
+      users = await Data.query('PK')
+        .eq(mid)
+        .filter('types')
+        .eq('USER-MAP')
+        .limit(4)
+        .exec();
+    }
 
-  // 각 유저의 정보를 다 가져오기
-  const userData = await Data.batchGet(userModels);
-  console.log('[makeThumbnail]', { userData });
+    // 캔버스 지우기
+    clearCanvas();
+    console.log('[makeThumbnail]', { users });
 
-  // 최대 4개의 이미지 로드하기
-  let images = [];
-  for (const i in userData) {
-    if (i == 4) break;
-    const thumbnail = userData[i].content.thumbnail;
-    images.push(await loadImage(thumbnail));
-  }
-  console.log('[makeThumbnail]', { images });
+    // 유저-지도에서 필요한 정보 추출 (최대 4개)
+    let userModels = [];
+    for (let i = 0; i < users.length; i++) {
+      console.log(users[i]);
+      userModels.push({
+        PK: users[i].SK,
+        SK: 'INFO',
+      });
+    }
+    console.log('[makeThumbnail]', { userModels });
 
-  // 이미지 개수에 따라서 다른 이미지 생성
-  // 1개
-  if (images.length == 1) {
-    drawRoundedImage(images[0], 5, 5, 190, 190, 70);
-  }
-  // 2개
-  else if (images.length == 2) {
-    drawRoundedImage(images[0], 5, 5, 120, 120, 60);
-    drawRoundedImage(images[1], 75, 75, 120, 120, 60);
-  }
-  // 3개
-  else if (images.length == 3) {
-    drawRoundedImage(images[0], 50, 5, 105, 105, 50);
-    drawRoundedImage(images[1], 5, 90, 105, 105, 50);
-    drawRoundedImage(images[2], 90, 90, 105, 105, 50);
-  }
-  // 4개
-  else {
-    drawRoundedImage(images[0], 5, 5, 90, 90, 40);
-    drawRoundedImage(images[1], 100, 5, 90, 90, 40);
-    drawRoundedImage(images[2], 5, 100, 90, 90, 40);
-    drawRoundedImage(images[3], 100, 100, 90, 90, 40);
-  }
+    // 각 유저의 정보를 다 가져오기
+    const userData = await Data.batchGet(userModels);
+    console.log('[makeThumbnail]', { userData });
 
-  // 이미지를 png로 저장
-  await putObject(mid, canvas.toBuffer('image/png'));
+    // 최대 4개의 이미지 로드하기
+    let images = [];
+    for (const i in userData) {
+      const thumbnail = userData[i].content.thumbnail;
+      images.push(await loadImage(thumbnail));
+      console.log('[makeThumbnail]', i, thumbnail);
+    }
+    console.log('[makeThumbnail]', { images });
+
+    // 이미지 개수에 따라서 다른 이미지 생성
+    // 1개
+    if (images.length == 1) {
+      drawRoundedImage(images[0], 5, 5, 190, 190, 70);
+    }
+    // 2개
+    else if (images.length == 2) {
+      drawRoundedImage(images[0], 5, 5, 120, 120, 60);
+      drawRoundedImage(images[1], 75, 75, 120, 120, 60);
+    }
+    // 3개
+    else if (images.length == 3) {
+      drawRoundedImage(images[0], 50, 5, 105, 105, 50);
+      drawRoundedImage(images[1], 5, 90, 105, 105, 50);
+      drawRoundedImage(images[2], 90, 90, 105, 105, 50);
+    }
+    // 4개
+    else {
+      drawRoundedImage(images[0], 5, 5, 90, 90, 40);
+      drawRoundedImage(images[1], 100, 5, 90, 90, 40);
+      drawRoundedImage(images[2], 5, 100, 90, 90, 40);
+      drawRoundedImage(images[3], 100, 100, 90, 90, 40);
+    }
+
+    // 이미지를 png로 저장
+    await putObject(mid, canvas.toBuffer('image/png'));
+
+    // Trick: userNumber의 변동을 알린다.
+    await addUserNumber(mid);
+  }
 
   return {
     statusCode: statusCode.processingSuccess,

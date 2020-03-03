@@ -36,7 +36,10 @@ const {
 const Logger = require('./modules/logger');
 
 // Lambda invoke 가져오기
-const { makeThumbnail, capture } = require('./modules/lambda');
+const { capture } = require('./modules/lambda');
+
+// SQS 가져오기
+const { makeThumbnail } = require('./modules/sqs');
 
 // s3 가져오기
 const { upload, deleteObject, deleteFolder } = require('./modules/s3_util');
@@ -453,15 +456,18 @@ router.patch('/:id', bodyParser(), async ctx => {
           break;
         }
       }
+
+      // 섬네일 제작
+      await makeThumbnail(mid, maps);
     }
     // 사용자 추가
     else {
       await newUserMap.save();
       maps.push(newUserMap);
-    }
 
-    // 섬네일 제작
-    await makeThumbnail(mid, maps);
+      // 섬네일 제작
+      await makeThumbnail(mid, maps);
+    }
 
     // 로그
     await Logger(ctx, mid);

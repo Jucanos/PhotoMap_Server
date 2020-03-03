@@ -40,8 +40,8 @@ const { deleteFolder } = require('./modules/s3_util');
 // Logger 가져오기
 const Logger = require('./modules/logger');
 
-// Lambda invoke 가져오기
-const { makeThumbnail } = require('./modules/lambda');
+// SQS 가져오기
+const { makeThumbnail } = require('./modules/sqs');
 
 // Firebase 가져오기
 const { deleteUser, deleteMap } = require('./modules/firebase');
@@ -62,8 +62,13 @@ router.get('/', async ctx => {
   // 파라미터 추출하기
   const uid = String(result.id);
   const nickname = result.kakao_account.profile.nickname;
-  const thumbnail = result.kakao_account.profile.thumbnail_image_url;
+  let thumbnail = result.kakao_account.profile.thumbnail_image_url;
   console.log('[Parameter]', { uid, nickname, thumbnail });
+
+  // thumbnail이 없을시 기본값
+  if (isUndefined(thumbnail)) {
+    thumbnail = process.env.S3_CUSTOM_DOMAIN + 'default_user.png';
+  }
 
   // 초기값 설정
   let userData = new DClass.User({
@@ -93,10 +98,25 @@ router.get('/', async ctx => {
     userData.primary = userDB.primary;
 
     // nickname과 thumbnail중 하나라도 다르면
-    if (!userData.equal(userDB)) {
+    const isEqual = userData.equal(userDB);
+    if (isEqual) {
       console.log('user data update');
       userDB.update(userData);
       await Data.update(userDB.json());
+
+      if (isEqual == 1 || isEqual == 3) {
+        const userMaps = await Data.query('SK')
+          .using('GSI')
+          .eq(uid)
+          .where('types')
+          .eq('USER-MAP')
+          .exec();
+        console.log('[Thumbnail Changed]', { userMaps });
+
+        for (const userMap of userMaps) {
+          await makeThumbnail(userMap.PK);
+        }
+      }
     }
   }
 

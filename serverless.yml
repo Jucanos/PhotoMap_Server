@@ -59,6 +59,9 @@ custom:
     stage: ${env:STAGE}
     certificateName: 'soybeans.tech'
     createRoute53Record: true
+  layers:
+    canvas: arn:aws:lambda:ap-northeast-2:383760702031:layer:canvas-library-layer:1
+    node-canvas: arn:aws:lambda:ap-northeast-2:383760702031:layer:node-canvas-layer:1
 
 # You can pin your service to only deploy with a specific Serverless version
 # Check out our docs for more details
@@ -73,19 +76,25 @@ provider:
   tracing:
     apiGateway: true
     lambda: true
+  deploymentBucket:
+    name: photomap-server-${env:STAGE}-serverlessdeploymentbucket
+    serverSideEncryption: AES256
   iamRoleStatements:
+    # for X-RAY
     - Effect: 'Allow'
       Action:
         - 'xray:PutTraceSegments'
         - 'xray:PutelementryRecords'
       Resource:
         - '*'
+    # for S3
     - Effect: 'Allow'
       Action:
         - 's3:*'
       Resource:
         - 'arn:aws:s3:::photomap'
         - 'arn:aws:s3:::photomap/*'
+    # for DynamoDB (Dynamoose)
     - Effect: Allow
       Action:
         - dynamodb:DescribeTable
@@ -100,16 +109,22 @@ provider:
       # the specific table for the stage
       Resource:
         - 'arn:aws:dynamodb:ap-northeast-2:*:*'
+    # for Invoke async lambda functions
     - Effect: Allow
       Action:
         - lambda:InvokeFunction
       # Restrict our IAM role permissions to
       # the specific table for the stage
       Resource:
-        - 'arn:aws:lambda:ap-northeast-2:383760702031:function:photomap-server-dev-DrawThumbnail'
-        - 'arn:aws:lambda:ap-northeast-2:383760702031:function:photomap-server-dev-DrawMapImage'
-        - 'arn:aws:lambda:ap-northeast-2:383760702031:function:photomap-server-prod-DrawThumbnail'
-        - 'arn:aws:lambda:ap-northeast-2:383760702031:function:photomap-server-prod-DrawMapImage'
+        - 'arn:aws:lambda:ap-northeast-2:383760702031:function:photomap-server-${env:STAGE}-DrawMapImage'
+    # for SQS
+    - Effect: Allow
+      Action:
+        - sqs:*
+      # Restrict our IAM role permissions to
+      # the specific table for the stage
+      Resource:
+        - 'arn:aws:sqs:ap-northeast-2:383760702031:photomap-${env:STAGE}-thumbnail.fifo'
 
 # you can overwrite defaults here
 #  stage: dev
@@ -136,6 +151,7 @@ provider:
 #    variable1: value1
 package:
   individually: true
+  excludeDevDependencies: true
 
 # you can add packaging information here
 #package:
@@ -218,14 +234,16 @@ functions:
     handler: src/drawThumbnail.handler
     tracing: true
     layers:
-      - arn:aws:lambda:ap-northeast-2:383760702031:layer:canvas-library-layer:1
-      - arn:aws:lambda:ap-northeast-2:383760702031:layer:node-canvas-layer:1
+      - ${self:custom.layers.canvas}
+      - ${self:custom.layers.node-canvas}
+    events:
+      - sqs: arn:aws:sqs:ap-northeast-2:383760702031:photomap-${env:STAGE}-thumbnail.fifo
   DrawMapImage:
     handler: src/drawMapImage.handler
     tracing: true
     layers:
-      - arn:aws:lambda:ap-northeast-2:383760702031:layer:canvas-library-layer:1
-      - arn:aws:lambda:ap-northeast-2:383760702031:layer:node-canvas-layer:1
+      - ${self:custom.layers.canvas}
+      - ${self:custom.layers.node-canvas}
 #    The following are a few example events you can configure
 #    NOTE: Please make sure to change your handler code to work with those events
 #    Check the event documentation for details
@@ -263,6 +281,7 @@ functions:
 #            path: /hello
 
 plugins:
+  - serverless-deployment-bucket
   - serverless-dotenv-plugin
   - serverless-apigw-binary
   - serverless-plugin-tracing
