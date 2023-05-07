@@ -34,7 +34,7 @@
     "serverless-deployment-bucket": "^1.1.1",
     "serverless-domain-manager": "^3.3.1",
     "serverless-dotenv-plugin": "^2.3.2",
-    "serverless-dynamodb-local": "^0.2.39",
+    "serverless-dynamodb-local": "^1.0.2",
     "serverless-offline": "^5.12.1",
     "serverless-plugin-tracing": "^2.0.0",
     "serverless-webpack": "^5.3.1",
